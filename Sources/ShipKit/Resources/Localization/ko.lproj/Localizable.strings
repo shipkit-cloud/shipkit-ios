@@ -1,0 +1,173 @@
+/* Common */
+"common.cancel" = "취소";
+"common.continue" = "계속";
+"common.done" = "완료";
+"common.ok" = "확인";
+"common.retry" = "다시 시도";
+"common.save" = "저장";
+
+/* Errors */
+"error.generic" = "문제가 발생했습니다. 다시 시도해 주세요.";
+"error.offline" = "오프라인 상태인 것 같습니다. 연결을 확인하고 다시 시도해 주세요.";
+"error.rateLimited" = "요청이 너무 많습니다. 잠시 기다린 후 다시 시도해 주세요.";
+
+/* Entry points */
+"entry.feedback" = "피드백 보내기";
+"entry.inbox" = "내 대화";
+"entry.requests" = "기능 요청";
+
+/* Version gate */
+"update.required.title" = "업데이트 필요";
+"update.required.message" = "이 버전은 더 이상 지원되지 않습니다. 계속하려면 업데이트해 주세요.";
+"update.blocked.title" = "업데이트 필요";
+"update.blocked.message" = "이 버전에 문제가 있으며 최신 버전에서 수정되었습니다. 계속하려면 업데이트해 주세요.";
+"update.recommended.title" = "업데이트 사용 가능";
+"update.recommended.message" = "개선 사항과 수정 사항이 포함된 새 버전을 사용할 수 있습니다.";
+"update.availableVersion" = "버전 %@ 사용 가능";
+"update.action.update" = "지금 업데이트";
+"update.action.later" = "나중에";
+"update.action.skip" = "이 버전 건너뛰기";
+"maintenance.title" = "점검 중";
+"maintenance.message" = "개선 작업을 진행 중이며 곧 다시 돌아오겠습니다.";
+"maintenance.until" = "복구 예정: %@";
+"whatsNew.title" = "%@의 새로운 기능";
+
+/* Feedback */
+"feedback.title" = "피드백";
+"feedback.category" = "유형";
+"category.bug" = "버그";
+"category.idea" = "아이디어";
+"category.question" = "질문";
+"category.praise" = "칭찬";
+"feedback.rating" = "평가";
+"feedback.rating.stars" = "별 %d개";
+"feedback.message" = "메시지";
+"feedback.placeholder.bug" = "어떤 일이 있었나요? 어떻게 되기를 기대하셨나요?";
+"feedback.placeholder.idea" = "어떤 기능을 원하시나요?";
+"feedback.placeholder.question" = "무엇이 궁금하신가요?";
+"feedback.placeholder.praise" = "어떤 점이 마음에 드시나요?";
+"feedback.attachments" = "스크린샷";
+"feedback.attach.photo" = "사진에서 선택";
+"feedback.attach.screen" = "현재 화면 첨부";
+"feedback.attachment.remove" = "스크린샷 삭제";
+"feedback.attachments.redactHint" = "스크린샷을 탭하면 보내기 전에 개인 정보를 가릴 수 있습니다.";
+"feedback.email" = "이메일(선택 사항)";
+"feedback.email.placeholder" = "you@example.com";
+"feedback.email.footer" = "답변을 드리는 데에만 사용됩니다.";
+"feedback.disclosure" = "문제를 살펴볼 수 있도록 메시지와 함께 앱 버전, OS 버전, 기기 모델, 언어 및 지역, 익명 설치 ID를 보냅니다.";
+"feedback.disclosure.details" = "포함되는 정보";
+"feedback.send" = "보내기";
+"feedback.error.title" = "보낼 수 없음";
+"feedback.sent.title" = "감사합니다!";
+"feedback.sent.message" = "피드백을 보냈습니다. 답변은 대화에 표시됩니다.";
+"feedback.queued.message" = "현재 오프라인 상태입니다. 피드백이 저장되었으며 자동으로 전송됩니다.";
+
+/* Context disclosure */
+"context.appVersion" = "앱 버전";
+"context.os" = "시스템";
+"context.device" = "기기";
+"context.locale" = "언어 및 지역";
+"context.installID" = "설치 ID";
+"context.userID" = "사용자 ID";
+
+/* Redaction */
+"redact.title" = "세부 정보 가리기";
+"redact.hint" = "가리고 싶은 부분 위로 드래그하세요.";
+"redact.undo" = "실행 취소";
+
+/* Inbox */
+"inbox.title" = "대화";
+"inbox.new" = "새 피드백";
+"inbox.empty.title" = "아직 대화가 없습니다";
+"inbox.empty.message" = "보낸 피드백과 받은 답변이 여기에 표시됩니다.";
+"inbox.fixedIn" = "%@에서 수정됨";
+"inbox.fixedIn.banner" = "버전 %@에서 수정됨";
+"inbox.developer" = "팀";
+"inbox.reply.placeholder" = "답장";
+"inbox.reply.send" = "보내기";
+"inbox.unread.accessibility" = "읽지 않음 %d개";
+"thread.status.new" = "새로운";
+"thread.status.open" = "진행 중";
+"thread.status.waiting" = "대기 중";
+"thread.status.resolved" = "해결됨";
+
+/* Ratings */
+"rating.prompt" = "이 기능은 어떠세요?";
+"rating.up" = "마음에 들어요";
+"rating.down" = "마음에 들지 않아요";
+
+/* Feature requests */
+"requests.title" = "기능 요청";
+"requests.new" = "새 요청";
+"requests.new.titleField" = "제목";
+"requests.new.descriptionField" = "아이디어를 설명해 주세요";
+"requests.new.footer" = "새 요청은 검토를 거친 후 모든 사용자에게 표시됩니다.";
+"requests.new.emailFooter" = "출시되면 알려 드리겠습니다.";
+"requests.new.submit" = "제출";
+"requests.empty.title" = "아직 아무것도 없습니다";
+"requests.empty.message" = "아이디어가 있으신가요? +를 탭하여 제안해 보세요.";
+"requests.pending" = "검토 중";
+"requests.linkedVersion" = "버전 %@";
+"requests.vote" = "투표";
+"requests.vote.remove" = "투표 취소";
+"requests.comments" = "댓글";
+"requests.comments.empty" = "아직 댓글이 없습니다.";
+"requests.comment.placeholder" = "댓글 추가";
+"requests.comment.user" = "사용자";
+"requests.comment.team" = "팀";
+"request.status.pending" = "검토 중";
+"request.status.open" = "열림";
+"request.status.planned" = "예정";
+"request.status.in_progress" = "진행 중";
+"request.status.done" = "완료";
+"request.status.rejected" = "거절됨";
+
+/* Debug */
+"debug.title" = "ShipKit 디버그";
+"debug.notConfigured" = "ShipKit이 구성되지 않았습니다.";
+"debug.status" = "상태";
+"debug.versionStatus" = "버전 상태";
+"debug.runningVersion" = "앱 버전";
+"debug.release" = "릴리스";
+"debug.fetchedAt" = "마지막 가져오기";
+"debug.apiURL" = "API URL";
+"debug.signing" = "서명 확인";
+"debug.on" = "켬";
+"debug.off" = "끔";
+"debug.pendingFeedback" = "대기 중인 피드백";
+"debug.lastError" = "마지막 오류";
+"debug.simulate" = "앱 버전 시뮬레이션";
+"debug.simulate.footer" = "지울 때까지 모든 요청에 앱 버전으로 전송됩니다.";
+"debug.simulate.clear" = "시뮬레이션 버전 지우기";
+"debug.apply" = "적용";
+"debug.settings" = "설정";
+"debug.flags" = "플래그";
+"debug.empty" = "없음";
+"debug.overridden" = "로컬 재정의";
+"debug.override" = "로컬 재정의";
+"debug.override.placeholder" = "JSON 값 또는 텍스트";
+"debug.override.footer" = "JSON(true, 42, \"text\", {\"a\":1})을 입력하세요. 그 외에는 텍스트로 저장됩니다. 원격 값을 사용하려면 비워 두세요.";
+"debug.override.remove" = "재정의 제거";
+"debug.remote" = "원격";
+"debug.remoteValue" = "원격 값";
+"debug.refresh" = "지금 새로 고침";
+"debug.resetPresentation" = "미리 알림 및 새로운 기능 재설정";
+"debug.clearOverrides" = "모든 재정의 지우기";
+"debug.clearCache" = "캐시된 스냅샷 지우기";
+
+/* Push notifications */
+"push.action.yes" = "예";
+"push.action.no" = "아니요";
+"push.action.reply" = "답장";
+"push.action.reply.send" = "보내기";
+"push.action.reply.placeholder" = "답변 입력";
+"question.title" = "간단한 질문";
+"question.answer" = "내 답변";
+"question.answer.placeholder" = "여기에 답변을 입력하세요";
+"question.comment" = "의견(선택 사항)";
+"question.comment.placeholder" = "더 하고 싶은 말이 있나요?";
+"question.answered" = "이미 답변했습니다. 다시 보내면 이전 답변이 대체됩니다.";
+"question.sent.message" = "답변을 보냈습니다. 앱을 더 좋게 만드는 데 도움을 주셔서 감사합니다.";
+"question.unavailable" = "이 질문은 더 이상 사용할 수 없습니다.";
+"push.asks.title" = "개발자의 질문";
+"push.asks.footer" = "앱 개발자가 가끔 보내는 질문, 피드백 요청 및 소식입니다. 받지 않으려면 끄세요.";

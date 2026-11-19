@@ -1,0 +1,28 @@
+{
+  "Simulator Target Bundle": "dev.shipkit.demo",
+  "aps": {
+    "alert": {
+      "title": "Quick question",
+      "body": "What do you like most about the app?"
+    },
+    "sound": "default",
+    "thread-id": "shipkit",
+    "category": "SHIPKIT_OPEN"
+  },
+  "shipkit": {
+    "d": "dlv_sample_choice",
+    "c": "cmp_sample",
+    "kind": "question",
+    "question": {
+      "prompt": "What do you like most about the app?",
+      "type": "choice",
+      "choices": [
+        "Speed",
+        "Design",
+        "Price"
+      ]
+    },
+    "feedbackPrompt": null,
+    "url": null
+  }
+}

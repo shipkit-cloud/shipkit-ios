@@ -1,0 +1,173 @@
+/* Common */
+"common.cancel" = "Annuler";
+"common.continue" = "Continuer";
+"common.done" = "OK";
+"common.ok" = "OK";
+"common.retry" = "Réessayer";
+"common.save" = "Enregistrer";
+
+/* Errors */
+"error.generic" = "Une erreur s’est produite. Veuillez réessayer.";
+"error.offline" = "Vous semblez être hors connexion. Vérifiez votre connexion et réessayez.";
+"error.rateLimited" = "Trop de requêtes. Veuillez patienter un instant et réessayer.";
+
+/* Entry points */
+"entry.feedback" = "Envoyer un commentaire";
+"entry.inbox" = "Vos conversations";
+"entry.requests" = "Suggestions de fonctionnalités";
+
+/* Version gate */
+"update.required.title" = "Mise à jour requise";
+"update.required.message" = "Cette version n’est plus prise en charge. Veuillez effectuer la mise à jour pour continuer.";
+"update.blocked.title" = "Mise à jour requise";
+"update.blocked.message" = "Cette version présente un problème corrigé dans une version plus récente. Veuillez effectuer la mise à jour pour continuer.";
+"update.recommended.title" = "Mise à jour disponible";
+"update.recommended.message" = "Une nouvelle version avec des améliorations et des correctifs est disponible.";
+"update.availableVersion" = "La version %@ est disponible";
+"update.action.update" = "Mettre à jour";
+"update.action.later" = "Plus tard";
+"update.action.skip" = "Ignorer cette version";
+"maintenance.title" = "En maintenance";
+"maintenance.message" = "Nous apportons quelques améliorations et serons de retour très bientôt.";
+"maintenance.until" = "Retour prévu : %@";
+"whatsNew.title" = "Nouveautés de %@";
+
+/* Feedback */
+"feedback.title" = "Commentaires";
+"feedback.category" = "Type";
+"category.bug" = "Bug";
+"category.idea" = "Idée";
+"category.question" = "Question";
+"category.praise" = "Compliment";
+"feedback.rating" = "Note";
+"feedback.rating.stars" = "%d étoiles";
+"feedback.message" = "Message";
+"feedback.placeholder.bug" = "Que s’est-il passé ? Qu’espériez-vous qu’il se passe ?";
+"feedback.placeholder.idea" = "Que souhaiteriez-vous voir ?";
+"feedback.placeholder.question" = "Que souhaitez-vous savoir ?";
+"feedback.placeholder.praise" = "Qu’appréciez-vous ?";
+"feedback.attachments" = "Captures d’écran";
+"feedback.attach.photo" = "Choisir dans Photos";
+"feedback.attach.screen" = "Joindre l’écran actuel";
+"feedback.attachment.remove" = "Supprimer la capture d’écran";
+"feedback.attachments.redactHint" = "Touchez une capture d’écran pour masquer les informations privées avant l’envoi.";
+"feedback.email" = "E-mail (facultatif)";
+"feedback.email.placeholder" = "vous@exemple.com";
+"feedback.email.footer" = "Utilisé uniquement pour vous répondre.";
+"feedback.disclosure" = "Avec votre message, nous envoyons la version de l’app, la version du système, le modèle d’appareil, la langue et la région, ainsi qu’un identifiant d’installation anonyme, afin de pouvoir étudier votre demande.";
+"feedback.disclosure.details" = "Ce qui est inclus";
+"feedback.send" = "Envoyer";
+"feedback.error.title" = "Envoi impossible";
+"feedback.sent.title" = "Merci !";
+"feedback.sent.message" = "Votre commentaire a été envoyé. Les réponses apparaîtront dans vos conversations.";
+"feedback.queued.message" = "Vous êtes actuellement hors connexion. Votre commentaire est enregistré et sera envoyé automatiquement.";
+
+/* Context disclosure */
+"context.appVersion" = "Version de l’app";
+"context.os" = "Système";
+"context.device" = "Appareil";
+"context.locale" = "Langue et région";
+"context.installID" = "ID d’installation";
+"context.userID" = "ID utilisateur";
+
+/* Redaction */
+"redact.title" = "Masquer des détails";
+"redact.hint" = "Faites glisser votre doigt sur ce que vous souhaitez masquer.";
+"redact.undo" = "Annuler";
+
+/* Inbox */
+"inbox.title" = "Conversations";
+"inbox.new" = "Nouveau commentaire";
+"inbox.empty.title" = "Aucune conversation";
+"inbox.empty.message" = "Les commentaires que vous envoyez et nos réponses apparaîtront ici.";
+"inbox.fixedIn" = "Corrigé dans %@";
+"inbox.fixedIn.banner" = "Corrigé dans la version %@";
+"inbox.developer" = "Équipe";
+"inbox.reply.placeholder" = "Répondre";
+"inbox.reply.send" = "Envoyer";
+"inbox.unread.accessibility" = "%d non lu(s)";
+"thread.status.new" = "Nouveau";
+"thread.status.open" = "Ouvert";
+"thread.status.waiting" = "En attente";
+"thread.status.resolved" = "Résolu";
+
+/* Ratings */
+"rating.prompt" = "Que pensez-vous de cette fonctionnalité ?";
+"rating.up" = "J’aime";
+"rating.down" = "Je n’aime pas";
+
+/* Feature requests */
+"requests.title" = "Suggestions de fonctionnalités";
+"requests.new" = "Nouvelle suggestion";
+"requests.new.titleField" = "Titre";
+"requests.new.descriptionField" = "Décrivez votre idée";
+"requests.new.footer" = "Les nouvelles suggestions sont examinées avant d’être visibles par tous.";
+"requests.new.emailFooter" = "Nous vous préviendrons dès sa sortie.";
+"requests.new.submit" = "Envoyer";
+"requests.empty.title" = "Rien pour l’instant";
+"requests.empty.message" = "Une idée ? Touchez + pour la proposer.";
+"requests.pending" = "En cours d’examen";
+"requests.linkedVersion" = "Version %@";
+"requests.vote" = "Voter";
+"requests.vote.remove" = "Retirer le vote";
+"requests.comments" = "Commentaires";
+"requests.comments.empty" = "Aucun commentaire pour l’instant.";
+"requests.comment.placeholder" = "Ajouter un commentaire";
+"requests.comment.user" = "Utilisateur";
+"requests.comment.team" = "Équipe";
+"request.status.pending" = "En cours d’examen";
+"request.status.open" = "Ouverte";
+"request.status.planned" = "Planifiée";
+"request.status.in_progress" = "En cours";
+"request.status.done" = "Terminée";
+"request.status.rejected" = "Refusée";
+
+/* Debug */
+"debug.title" = "Débogage ShipKit";
+"debug.notConfigured" = "ShipKit n’est pas configuré.";
+"debug.status" = "Statut";
+"debug.versionStatus" = "Statut de la version";
+"debug.runningVersion" = "Version de l’app";
+"debug.release" = "Release";
+"debug.fetchedAt" = "Dernière récupération";
+"debug.apiURL" = "API URL";
+"debug.signing" = "Vérification de la signature";
+"debug.on" = "Activé";
+"debug.off" = "Désactivé";
+"debug.pendingFeedback" = "Commentaires en attente";
+"debug.lastError" = "Dernière erreur";
+"debug.simulate" = "Simuler la version de l’app";
+"debug.simulate.footer" = "Envoyée comme version de l’app dans chaque requête jusqu’à sa suppression.";
+"debug.simulate.clear" = "Effacer la version simulée";
+"debug.apply" = "Appliquer";
+"debug.settings" = "Réglages";
+"debug.flags" = "Flags";
+"debug.empty" = "Aucun";
+"debug.overridden" = "REMPLACEMENT LOCAL";
+"debug.override" = "Remplacement local";
+"debug.override.placeholder" = "Valeur JSON ou texte";
+"debug.override.footer" = "Saisissez du JSON (true, 42, \"text\", {\"a\":1}). Tout le reste est enregistré comme texte. Laissez vide pour utiliser la valeur distante.";
+"debug.override.remove" = "Supprimer le remplacement";
+"debug.remote" = "Distant";
+"debug.remoteValue" = "Valeur distante";
+"debug.refresh" = "Actualiser maintenant";
+"debug.resetPresentation" = "Réinitialiser les rappels et les nouveautés";
+"debug.clearOverrides" = "Effacer tous les remplacements";
+"debug.clearCache" = "Effacer l’instantané en cache";
+
+/* Push notifications */
+"push.action.yes" = "Oui";
+"push.action.no" = "Non";
+"push.action.reply" = "Répondre";
+"push.action.reply.send" = "Envoyer";
+"push.action.reply.placeholder" = "Saisissez votre réponse";
+"question.title" = "Petite question";
+"question.answer" = "Votre réponse";
+"question.answer.placeholder" = "Saisissez votre réponse ici";
+"question.comment" = "Commentaire (facultatif)";
+"question.comment.placeholder" = "Quelque chose à ajouter ?";
+"question.answered" = "Vous avez déjà répondu. Un nouvel envoi remplacera votre réponse précédente.";
+"question.sent.message" = "Votre réponse a été envoyée. Merci de nous aider à améliorer l’app.";
+"question.unavailable" = "Cette question n’est plus disponible.";
+"push.asks.title" = "Questions du développeur";
+"push.asks.footer" = "Questions occasionnelles, demandes d’avis et nouveautés du développeur de l’app. Désactivez cette option pour ne plus les recevoir.";

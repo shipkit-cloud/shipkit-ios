@@ -1,0 +1,20 @@
+{
+  "Simulator Target Bundle": "dev.shipkit.demo",
+  "aps": {
+    "alert": {
+      "title": "We'd love your input",
+      "body": "What should we build next?"
+    },
+    "sound": "default",
+    "thread-id": "shipkit",
+    "category": "SHIPKIT_OPEN"
+  },
+  "shipkit": {
+    "d": "dlv_sample_feedback",
+    "c": "cmp_sample",
+    "kind": "feedback",
+    "question": null,
+    "feedbackPrompt": "What should we build next?",
+    "url": null
+  }
+}

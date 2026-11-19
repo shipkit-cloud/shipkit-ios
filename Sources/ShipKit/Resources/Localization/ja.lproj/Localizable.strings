@@ -1,0 +1,173 @@
+/* Common */
+"common.cancel" = "キャンセル";
+"common.continue" = "続ける";
+"common.done" = "完了";
+"common.ok" = "OK";
+"common.retry" = "再試行";
+"common.save" = "保存";
+
+/* Errors */
+"error.generic" = "問題が発生しました。もう一度お試しください。";
+"error.offline" = "オフラインのようです。接続を確認して、もう一度お試しください。";
+"error.rateLimited" = "リクエストが多すぎます。しばらく待ってから、もう一度お試しください。";
+
+/* Entry points */
+"entry.feedback" = "フィードバックを送信";
+"entry.inbox" = "会話";
+"entry.requests" = "機能リクエスト";
+
+/* Version gate */
+"update.required.title" = "アップデートが必要です";
+"update.required.message" = "このバージョンはサポートされなくなりました。続けるにはアップデートしてください。";
+"update.blocked.title" = "アップデートが必要です";
+"update.blocked.message" = "このバージョンには問題があり、新しいバージョンで修正されています。続けるにはアップデートしてください。";
+"update.recommended.title" = "アップデートがあります";
+"update.recommended.message" = "改善と修正を含む新しいバージョンが利用できます。";
+"update.availableVersion" = "バージョン%@が利用できます";
+"update.action.update" = "今すぐアップデート";
+"update.action.later" = "今はしない";
+"update.action.skip" = "このバージョンをスキップ";
+"maintenance.title" = "メンテナンス中";
+"maintenance.message" = "現在、改善作業を行っています。まもなく再開します。";
+"maintenance.until" = "再開予定: %@";
+"whatsNew.title" = "%@の新機能";
+
+/* Feedback */
+"feedback.title" = "フィードバック";
+"feedback.category" = "種類";
+"category.bug" = "不具合";
+"category.idea" = "アイデア";
+"category.question" = "質問";
+"category.praise" = "ご感想";
+"feedback.rating" = "評価";
+"feedback.rating.stars" = "星%d個";
+"feedback.message" = "メッセージ";
+"feedback.placeholder.bug" = "何が起きましたか？どうなると思っていましたか？";
+"feedback.placeholder.idea" = "どんな機能がほしいですか？";
+"feedback.placeholder.question" = "知りたいことは何ですか？";
+"feedback.placeholder.praise" = "気に入っているところは何ですか？";
+"feedback.attachments" = "スクリーンショット";
+"feedback.attach.photo" = "写真から選択";
+"feedback.attach.screen" = "現在の画面を添付";
+"feedback.attachment.remove" = "スクリーンショットを削除";
+"feedback.attachments.redactHint" = "スクリーンショットをタップすると、送信前に個人情報を黒塗りできます。";
+"feedback.email" = "メールアドレス（任意）";
+"feedback.email.placeholder" = "you@example.com";
+"feedback.email.footer" = "ご返信のためにのみ使用されます。";
+"feedback.disclosure" = "調査のため、メッセージとあわせて、Appのバージョン、OSのバージョン、デバイスのモデル、言語と地域、匿名のインストールIDを送信します。";
+"feedback.disclosure.details" = "送信される情報";
+"feedback.send" = "送信";
+"feedback.error.title" = "送信できませんでした";
+"feedback.sent.title" = "ありがとうございます！";
+"feedback.sent.message" = "フィードバックを送信しました。返信は会話に表示されます。";
+"feedback.queued.message" = "現在オフラインです。フィードバックは保存され、自動的に送信されます。";
+
+/* Context disclosure */
+"context.appVersion" = "Appのバージョン";
+"context.os" = "システム";
+"context.device" = "デバイス";
+"context.locale" = "言語と地域";
+"context.installID" = "インストールID";
+"context.userID" = "ユーザID";
+
+/* Redaction */
+"redact.title" = "詳細を隠す";
+"redact.hint" = "隠したい部分をなぞってください。";
+"redact.undo" = "取り消す";
+
+/* Inbox */
+"inbox.title" = "会話";
+"inbox.new" = "新しいフィードバック";
+"inbox.empty.title" = "会話はまだありません";
+"inbox.empty.message" = "送信したフィードバックと私たちからの返信がここに表示されます。";
+"inbox.fixedIn" = "%@で修正";
+"inbox.fixedIn.banner" = "バージョン%@で修正されました";
+"inbox.developer" = "チーム";
+"inbox.reply.placeholder" = "返信";
+"inbox.reply.send" = "送信";
+"inbox.unread.accessibility" = "未読%d件";
+"thread.status.new" = "新規";
+"thread.status.open" = "オープン";
+"thread.status.waiting" = "返信待ち";
+"thread.status.resolved" = "解決済み";
+
+/* Ratings */
+"rating.prompt" = "この機能はいかがですか？";
+"rating.up" = "気に入った";
+"rating.down" = "気に入らない";
+
+/* Feature requests */
+"requests.title" = "機能リクエスト";
+"requests.new" = "新規リクエスト";
+"requests.new.titleField" = "タイトル";
+"requests.new.descriptionField" = "アイデアを説明してください";
+"requests.new.footer" = "新しいリクエストは、審査後にすべてのユーザに表示されます。";
+"requests.new.emailFooter" = "機能が提供されたらお知らせします。";
+"requests.new.submit" = "送信";
+"requests.empty.title" = "まだ何もありません";
+"requests.empty.message" = "アイデアがありますか？＋をタップして提案してください。";
+"requests.pending" = "審査中";
+"requests.linkedVersion" = "バージョン%@";
+"requests.vote" = "投票";
+"requests.vote.remove" = "投票を取り消す";
+"requests.comments" = "コメント";
+"requests.comments.empty" = "コメントはまだありません。";
+"requests.comment.placeholder" = "コメントを追加";
+"requests.comment.user" = "ユーザ";
+"requests.comment.team" = "チーム";
+"request.status.pending" = "審査中";
+"request.status.open" = "オープン";
+"request.status.planned" = "予定";
+"request.status.in_progress" = "対応中";
+"request.status.done" = "完了";
+"request.status.rejected" = "見送り";
+
+/* Debug */
+"debug.title" = "ShipKit デバッグ";
+"debug.notConfigured" = "ShipKitが設定されていません。";
+"debug.status" = "ステータス";
+"debug.versionStatus" = "バージョンのステータス";
+"debug.runningVersion" = "Appのバージョン";
+"debug.release" = "リリース";
+"debug.fetchedAt" = "最終取得";
+"debug.apiURL" = "API URL";
+"debug.signing" = "署名の確認";
+"debug.on" = "オン";
+"debug.off" = "オフ";
+"debug.pendingFeedback" = "送信待ちのフィードバック";
+"debug.lastError" = "最後のエラー";
+"debug.simulate" = "Appバージョンをシミュレート";
+"debug.simulate.footer" = "解除するまで、すべてのリクエストでAppバージョンとして送信されます。";
+"debug.simulate.clear" = "シミュレートしたバージョンを消去";
+"debug.apply" = "適用";
+"debug.settings" = "設定";
+"debug.flags" = "フラグ";
+"debug.empty" = "なし";
+"debug.overridden" = "ローカルオーバーライド";
+"debug.override" = "ローカルオーバーライド";
+"debug.override.placeholder" = "JSON値またはテキスト";
+"debug.override.footer" = "JSON（true、42、\"text\"、{\"a\":1}）を入力してください。それ以外はテキストとして保存されます。空のままにするとリモートの値が使われます。";
+"debug.override.remove" = "オーバーライドを削除";
+"debug.remote" = "リモート";
+"debug.remoteValue" = "リモートの値";
+"debug.refresh" = "今すぐ更新";
+"debug.resetPresentation" = "リマインダと新機能表示をリセット";
+"debug.clearOverrides" = "すべてのオーバーライドを消去";
+"debug.clearCache" = "キャッシュしたスナップショットを消去";
+
+/* Push notifications */
+"push.action.yes" = "はい";
+"push.action.no" = "いいえ";
+"push.action.reply" = "返信";
+"push.action.reply.send" = "送信";
+"push.action.reply.placeholder" = "回答を入力";
+"question.title" = "ちょっとした質問";
+"question.answer" = "あなたの回答";
+"question.answer.placeholder" = "ここに回答を入力してください";
+"question.comment" = "コメント（任意）";
+"question.comment.placeholder" = "ほかに伝えたいことはありますか？";
+"question.answered" = "すでに回答済みです。もう一度送信すると、前の回答が置き換えられます。";
+"question.sent.message" = "回答を送信しました。アプリの改善にご協力いただきありがとうございます。";
+"question.unavailable" = "この質問は現在ご利用いただけません。";
+"push.asks.title" = "開発者からの質問";
+"push.asks.footer" = "アプリの開発者からの質問、フィードバックのお願い、お知らせがときどき届きます。受け取らない場合はオフにしてください。";

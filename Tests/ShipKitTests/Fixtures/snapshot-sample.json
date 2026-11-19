@@ -1,0 +1,22 @@
+{
+  "release": 7,
+  "ttl": 900,
+  "settings": { "max_upload_mb": 25, "promo_banner": "Hello", "limits": { "a": 1 } },
+  "flags": { "new_onboarding": true, "paywall_layout": "B" },
+  "version": {
+    "status": "ok",
+    "current": "2.4.0",
+    "min": "2.0.0",
+    "recommended": "2.5.0",
+    "latest": "2.5.1",
+    "storeURL": "https://apps.apple.com/app/id123456789",
+    "title": "New version available",
+    "message": "Faster sync and bug fixes.",
+    "reminder": { "everyLaunches": 3, "everyDays": 2, "maxPerVersion": 3, "allowSkip": true },
+    "maintenance": null,
+    "osFloor": null,
+    "whatsNew": { "version": "2.4.0", "items": ["Dark mode", "Faster sync"] },
+    "personal": ["The issue you reported is fixed in 2.5.0."]
+  },
+  "inbox": { "unread": 1 }
+}

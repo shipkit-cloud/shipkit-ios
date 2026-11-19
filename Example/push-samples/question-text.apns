@@ -1,0 +1,24 @@
+{
+  "Simulator Target Bundle": "dev.shipkit.demo",
+  "aps": {
+    "alert": {
+      "title": "Quick question",
+      "body": "What almost stopped you from upgrading?"
+    },
+    "sound": "default",
+    "thread-id": "shipkit",
+    "category": "SHIPKIT_TEXT"
+  },
+  "shipkit": {
+    "d": "dlv_sample_text",
+    "c": "cmp_sample",
+    "kind": "question",
+    "question": {
+      "prompt": "What almost stopped you from upgrading?",
+      "type": "text",
+      "choices": []
+    },
+    "feedbackPrompt": null,
+    "url": null
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "publicKey": "q1hncxmwwmjOZxUwhgHeMrotitTQGtLml81Q36ekG0U=",
+  "body": "{\"release\":3,\"ttl\":900,\"settings\":{\"greeting\":\"Hej 👋\"},\"flags\":{\"new_ui\":true},\"version\":{\"status\":\"ok\",\"current\":\"2.4.0\"},\"inbox\":{\"unread\":0}}",
+  "signature": "tvp0FKfP1L3HYIApcCEmw1rOOyR8rIVVtJY0P0pT13XgDcVk5fOavZnIVhbaTdbQlcYXziNAq4zA8FqWtfvQAg=="
+}

@@ -1,0 +1,24 @@
+{
+  "Simulator Target Bundle": "dev.shipkit.demo",
+  "aps": {
+    "alert": {
+      "title": "Quick question",
+      "body": "Did the new export work for you?"
+    },
+    "sound": "default",
+    "thread-id": "shipkit",
+    "category": "SHIPKIT_YESNO"
+  },
+  "shipkit": {
+    "d": "dlv_sample_yesno",
+    "c": "cmp_sample",
+    "kind": "question",
+    "question": {
+      "prompt": "Did the new export work for you?",
+      "type": "yesno",
+      "choices": []
+    },
+    "feedbackPrompt": null,
+    "url": null
+  }
+}

@@ -1,0 +1,173 @@
+/* Common */
+"common.cancel" = "Annuleer";
+"common.continue" = "Ga door";
+"common.done" = "Gereed";
+"common.ok" = "OK";
+"common.retry" = "Probeer opnieuw";
+"common.save" = "Bewaar";
+
+/* Errors */
+"error.generic" = "Er is iets misgegaan. Probeer het opnieuw.";
+"error.offline" = "Je lijkt offline te zijn. Controleer je verbinding en probeer het opnieuw.";
+"error.rateLimited" = "Te veel verzoeken. Wacht even en probeer het opnieuw.";
+
+/* Entry points */
+"entry.feedback" = "Stuur feedback";
+"entry.inbox" = "Je gesprekken";
+"entry.requests" = "Functieverzoeken";
+
+/* Version gate */
+"update.required.title" = "Update vereist";
+"update.required.message" = "Deze versie wordt niet meer ondersteund. Werk bij om door te gaan.";
+"update.blocked.title" = "Update vereist";
+"update.blocked.message" = "Deze versie heeft een probleem dat in een nieuwere versie is opgelost. Werk bij om door te gaan.";
+"update.recommended.title" = "Update beschikbaar";
+"update.recommended.message" = "Er is een nieuwe versie beschikbaar met verbeteringen en oplossingen.";
+"update.availableVersion" = "Versie %@ is beschikbaar";
+"update.action.update" = "Werk nu bij";
+"update.action.later" = "Niet nu";
+"update.action.skip" = "Sla deze versie over";
+"maintenance.title" = "In onderhoud";
+"maintenance.message" = "We voeren enkele verbeteringen door en zijn zo weer terug.";
+"maintenance.until" = "Verwacht terug: %@";
+"whatsNew.title" = "Nieuw in %@";
+
+/* Feedback */
+"feedback.title" = "Feedback";
+"feedback.category" = "Type";
+"category.bug" = "Bug";
+"category.idea" = "Idee";
+"category.question" = "Vraag";
+"category.praise" = "Compliment";
+"feedback.rating" = "Beoordeling";
+"feedback.rating.stars" = "%d sterren";
+"feedback.message" = "Bericht";
+"feedback.placeholder.bug" = "Wat is er gebeurd? Wat had je verwacht?";
+"feedback.placeholder.idea" = "Wat zou je graag willen zien?";
+"feedback.placeholder.question" = "Wat wil je weten?";
+"feedback.placeholder.praise" = "Wat vind je fijn?";
+"feedback.attachments" = "Schermafbeeldingen";
+"feedback.attach.photo" = "Kies uit Foto's";
+"feedback.attach.screen" = "Voeg huidig scherm toe";
+"feedback.attachment.remove" = "Verwijder schermafbeelding";
+"feedback.attachments.redactHint" = "Tik op een schermafbeelding om privégegevens zwart te maken voordat je verstuurt.";
+"feedback.email" = "E-mail (optioneel)";
+"feedback.email.placeholder" = "jij@voorbeeld.nl";
+"feedback.email.footer" = "Alleen gebruikt om je te antwoorden.";
+"feedback.disclosure" = "Samen met je bericht sturen we de appversie, de OS-versie, het apparaatmodel, taal en regio en een anoniem installatie-ID mee, zodat we het kunnen onderzoeken.";
+"feedback.disclosure.details" = "Wat is inbegrepen";
+"feedback.send" = "Verstuur";
+"feedback.error.title" = "Versturen mislukt";
+"feedback.sent.title" = "Bedankt!";
+"feedback.sent.message" = "Je feedback is verstuurd. Antwoorden verschijnen in je gesprekken.";
+"feedback.queued.message" = "Je bent nu offline. Je feedback is bewaard en wordt automatisch verstuurd.";
+
+/* Context disclosure */
+"context.appVersion" = "Appversie";
+"context.os" = "Systeem";
+"context.device" = "Apparaat";
+"context.locale" = "Taal en regio";
+"context.installID" = "Installatie-ID";
+"context.userID" = "Gebruikers-ID";
+
+/* Redaction */
+"redact.title" = "Verberg details";
+"redact.hint" = "Sleep over alles wat je wilt verbergen.";
+"redact.undo" = "Maak ongedaan";
+
+/* Inbox */
+"inbox.title" = "Gesprekken";
+"inbox.new" = "Nieuwe feedback";
+"inbox.empty.title" = "Nog geen gesprekken";
+"inbox.empty.message" = "Feedback die je verstuurt en onze antwoorden verschijnen hier.";
+"inbox.fixedIn" = "Opgelost in %@";
+"inbox.fixedIn.banner" = "Opgelost in versie %@";
+"inbox.developer" = "Team";
+"inbox.reply.placeholder" = "Antwoord";
+"inbox.reply.send" = "Verstuur";
+"inbox.unread.accessibility" = "%d ongelezen";
+"thread.status.new" = "Nieuw";
+"thread.status.open" = "Open";
+"thread.status.waiting" = "Wachtend";
+"thread.status.resolved" = "Opgelost";
+
+/* Ratings */
+"rating.prompt" = "Wat vind je van deze functie?";
+"rating.up" = "Vind ik leuk";
+"rating.down" = "Vind ik niet leuk";
+
+/* Feature requests */
+"requests.title" = "Functieverzoeken";
+"requests.new" = "Nieuw verzoek";
+"requests.new.titleField" = "Titel";
+"requests.new.descriptionField" = "Beschrijf je idee";
+"requests.new.footer" = "Nieuwe verzoeken worden beoordeeld voordat ze voor iedereen zichtbaar zijn.";
+"requests.new.emailFooter" = "We laten het je weten zodra het beschikbaar is.";
+"requests.new.submit" = "Dien in";
+"requests.empty.title" = "Nog niets hier";
+"requests.empty.message" = "Heb je een idee? Tik op + om het voor te stellen.";
+"requests.pending" = "In beoordeling";
+"requests.linkedVersion" = "Versie %@";
+"requests.vote" = "Stem";
+"requests.vote.remove" = "Verwijder stem";
+"requests.comments" = "Reacties";
+"requests.comments.empty" = "Nog geen reacties.";
+"requests.comment.placeholder" = "Voeg een reactie toe";
+"requests.comment.user" = "Gebruiker";
+"requests.comment.team" = "Team";
+"request.status.pending" = "In beoordeling";
+"request.status.open" = "Open";
+"request.status.planned" = "Gepland";
+"request.status.in_progress" = "In uitvoering";
+"request.status.done" = "Gereed";
+"request.status.rejected" = "Afgewezen";
+
+/* Debug */
+"debug.title" = "ShipKit-debug";
+"debug.notConfigured" = "ShipKit is niet geconfigureerd.";
+"debug.status" = "Status";
+"debug.versionStatus" = "Versiestatus";
+"debug.runningVersion" = "Appversie";
+"debug.release" = "Release";
+"debug.fetchedAt" = "Laatst opgehaald";
+"debug.apiURL" = "API URL";
+"debug.signing" = "Handtekeningcontrole";
+"debug.on" = "Aan";
+"debug.off" = "Uit";
+"debug.pendingFeedback" = "Feedback in wachtrij";
+"debug.lastError" = "Laatste fout";
+"debug.simulate" = "Simuleer appversie";
+"debug.simulate.footer" = "Wordt bij elk verzoek als appversie verstuurd totdat je dit wist.";
+"debug.simulate.clear" = "Wis gesimuleerde versie";
+"debug.apply" = "Pas toe";
+"debug.settings" = "Instellingen";
+"debug.flags" = "Flags";
+"debug.empty" = "Geen";
+"debug.overridden" = "LOKALE OVERSCHRIJVING";
+"debug.override" = "Lokale overschrijving";
+"debug.override.placeholder" = "JSON-waarde of tekst";
+"debug.override.footer" = "Voer JSON in (true, 42, \"text\", {\"a\":1}). Al het andere wordt als tekst bewaard. Laat leeg om de externe waarde te gebruiken.";
+"debug.override.remove" = "Verwijder overschrijving";
+"debug.remote" = "Extern";
+"debug.remoteValue" = "Externe waarde";
+"debug.refresh" = "Ververs nu";
+"debug.resetPresentation" = "Zet herinneringen en nieuwigheden terug";
+"debug.clearOverrides" = "Wis alle overschrijvingen";
+"debug.clearCache" = "Wis gecachte snapshot";
+
+/* Push notifications */
+"push.action.yes" = "Ja";
+"push.action.no" = "Nee";
+"push.action.reply" = "Antwoord";
+"push.action.reply.send" = "Verstuur";
+"push.action.reply.placeholder" = "Typ je antwoord";
+"question.title" = "Korte vraag";
+"question.answer" = "Je antwoord";
+"question.answer.placeholder" = "Typ hier je antwoord";
+"question.comment" = "Opmerking (optioneel)";
+"question.comment.placeholder" = "Wil je nog iets toevoegen?";
+"question.answered" = "Je hebt al geantwoord. Als je opnieuw verstuurt, wordt je eerdere antwoord vervangen.";
+"question.sent.message" = "Je antwoord is verstuurd. Bedankt dat je helpt de app beter te maken.";
+"question.unavailable" = "Deze vraag is niet meer beschikbaar.";
+"push.asks.title" = "Vragen van de ontwikkelaar";
+"push.asks.footer" = "Af en toe vragen, verzoeken om feedback en nieuws van de ontwikkelaar van de app. Zet dit uit om ze niet meer te ontvangen.";

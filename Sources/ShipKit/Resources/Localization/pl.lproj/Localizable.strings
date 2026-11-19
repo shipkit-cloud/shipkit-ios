@@ -1,0 +1,173 @@
+/* Common */
+"common.cancel" = "Anuluj";
+"common.continue" = "Kontynuuj";
+"common.done" = "Gotowe";
+"common.ok" = "OK";
+"common.retry" = "Spróbuj ponownie";
+"common.save" = "Zachowaj";
+
+/* Errors */
+"error.generic" = "Coś poszło nie tak. Spróbuj ponownie.";
+"error.offline" = "Wygląda na to, że jesteś offline. Sprawdź połączenie i spróbuj ponownie.";
+"error.rateLimited" = "Zbyt wiele żądań. Poczekaj chwilę i spróbuj ponownie.";
+
+/* Entry points */
+"entry.feedback" = "Wyślij opinię";
+"entry.inbox" = "Twoje rozmowy";
+"entry.requests" = "Propozycje funkcji";
+
+/* Version gate */
+"update.required.title" = "Wymagana aktualizacja";
+"update.required.message" = "Ta wersja nie jest już obsługiwana. Zaktualizuj, aby kontynuować.";
+"update.blocked.title" = "Wymagana aktualizacja";
+"update.blocked.message" = "Ta wersja ma problem, który został naprawiony w nowszym wydaniu. Zaktualizuj, aby kontynuować.";
+"update.recommended.title" = "Dostępna aktualizacja";
+"update.recommended.message" = "Dostępna jest nowa wersja z ulepszeniami i poprawkami.";
+"update.availableVersion" = "Dostępna jest wersja %@";
+"update.action.update" = "Zaktualizuj teraz";
+"update.action.later" = "Nie teraz";
+"update.action.skip" = "Pomiń tę wersję";
+"maintenance.title" = "Przerwa techniczna";
+"maintenance.message" = "Wprowadzamy ulepszenia i wkrótce wrócimy.";
+"maintenance.until" = "Przewidywany powrót: %@";
+"whatsNew.title" = "Nowości w %@";
+
+/* Feedback */
+"feedback.title" = "Opinia";
+"feedback.category" = "Typ";
+"category.bug" = "Błąd";
+"category.idea" = "Pomysł";
+"category.question" = "Pytanie";
+"category.praise" = "Pochwała";
+"feedback.rating" = "Ocena";
+"feedback.rating.stars" = "Gwiazdki: %d";
+"feedback.message" = "Wiadomość";
+"feedback.placeholder.bug" = "Co się stało? Czego się spodziewałeś(-aś)?";
+"feedback.placeholder.idea" = "Co chciał(a)byś zobaczyć?";
+"feedback.placeholder.question" = "Co chcesz wiedzieć?";
+"feedback.placeholder.praise" = "Co Ci się podoba?";
+"feedback.attachments" = "Zrzuty ekranu";
+"feedback.attach.photo" = "Wybierz ze Zdjęć";
+"feedback.attach.screen" = "Załącz bieżący ekran";
+"feedback.attachment.remove" = "Usuń zrzut ekranu";
+"feedback.attachments.redactHint" = "Stuknij zrzut ekranu, aby zaczernić prywatne informacje przed wysłaniem.";
+"feedback.email" = "E-mail (opcjonalnie)";
+"feedback.email.placeholder" = "ty@example.com";
+"feedback.email.footer" = "Używany wyłącznie do odpowiedzi na Twoją wiadomość.";
+"feedback.disclosure" = "Razem z wiadomością wysyłamy wersję aplikacji, wersję systemu, model urządzenia, język i region oraz anonimowy identyfikator instalacji, abyśmy mogli zbadać sprawę.";
+"feedback.disclosure.details" = "Co jest uwzględnione";
+"feedback.send" = "Wyślij";
+"feedback.error.title" = "Nie można wysłać";
+"feedback.sent.title" = "Dziękujemy!";
+"feedback.sent.message" = "Twoja opinia została wysłana. Odpowiedzi pojawią się w Twoich rozmowach.";
+"feedback.queued.message" = "Jesteś teraz offline. Twoja opinia została zapisana i zostanie wysłana automatycznie.";
+
+/* Context disclosure */
+"context.appVersion" = "Wersja aplikacji";
+"context.os" = "System";
+"context.device" = "Urządzenie";
+"context.locale" = "Język i region";
+"context.installID" = "Identyfikator instalacji";
+"context.userID" = "Identyfikator użytkownika";
+
+/* Redaction */
+"redact.title" = "Ukryj szczegóły";
+"redact.hint" = "Przeciągnij palcem po tym, co chcesz ukryć.";
+"redact.undo" = "Cofnij";
+
+/* Inbox */
+"inbox.title" = "Rozmowy";
+"inbox.new" = "Nowa opinia";
+"inbox.empty.title" = "Brak rozmów";
+"inbox.empty.message" = "Wysłane opinie i nasze odpowiedzi pojawią się tutaj.";
+"inbox.fixedIn" = "Naprawiono w %@";
+"inbox.fixedIn.banner" = "Naprawiono w wersji %@";
+"inbox.developer" = "Zespół";
+"inbox.reply.placeholder" = "Odpowiedz";
+"inbox.reply.send" = "Wyślij";
+"inbox.unread.accessibility" = "Nieprzeczytane: %d";
+"thread.status.new" = "Nowa";
+"thread.status.open" = "Otwarta";
+"thread.status.waiting" = "Oczekuje";
+"thread.status.resolved" = "Rozwiązana";
+
+/* Ratings */
+"rating.prompt" = "Jak oceniasz tę funkcję?";
+"rating.up" = "Podoba mi się";
+"rating.down" = "Nie podoba mi się";
+
+/* Feature requests */
+"requests.title" = "Propozycje funkcji";
+"requests.new" = "Nowa propozycja";
+"requests.new.titleField" = "Tytuł";
+"requests.new.descriptionField" = "Opisz swój pomysł";
+"requests.new.footer" = "Nowe propozycje są sprawdzane, zanim staną się widoczne dla wszystkich.";
+"requests.new.emailFooter" = "Powiadomimy Cię, gdy funkcja będzie dostępna.";
+"requests.new.submit" = "Prześlij";
+"requests.empty.title" = "Na razie pusto";
+"requests.empty.message" = "Masz pomysł? Stuknij +, aby go zaproponować.";
+"requests.pending" = "W trakcie oceny";
+"requests.linkedVersion" = "Wersja %@";
+"requests.vote" = "Zagłosuj";
+"requests.vote.remove" = "Cofnij głos";
+"requests.comments" = "Komentarze";
+"requests.comments.empty" = "Brak komentarzy.";
+"requests.comment.placeholder" = "Dodaj komentarz";
+"requests.comment.user" = "Użytkownik";
+"requests.comment.team" = "Zespół";
+"request.status.pending" = "W trakcie oceny";
+"request.status.open" = "Otwarta";
+"request.status.planned" = "Planowana";
+"request.status.in_progress" = "W toku";
+"request.status.done" = "Gotowa";
+"request.status.rejected" = "Odrzucona";
+
+/* Debug */
+"debug.title" = "Debugowanie ShipKit";
+"debug.notConfigured" = "ShipKit nie jest skonfigurowany.";
+"debug.status" = "Status";
+"debug.versionStatus" = "Status wersji";
+"debug.runningVersion" = "Wersja aplikacji";
+"debug.release" = "Wydanie";
+"debug.fetchedAt" = "Ostatnie pobranie";
+"debug.apiURL" = "API URL";
+"debug.signing" = "Weryfikacja podpisu";
+"debug.on" = "Wł.";
+"debug.off" = "Wył.";
+"debug.pendingFeedback" = "Opinie w kolejce";
+"debug.lastError" = "Ostatni błąd";
+"debug.simulate" = "Symuluj wersję aplikacji";
+"debug.simulate.footer" = "Wysyłana jako wersja aplikacji w każdym żądaniu, dopóki nie zostanie wyczyszczona.";
+"debug.simulate.clear" = "Wyczyść symulowaną wersję";
+"debug.apply" = "Zastosuj";
+"debug.settings" = "Ustawienia";
+"debug.flags" = "Flagi";
+"debug.empty" = "Brak";
+"debug.overridden" = "LOKALNE NADPISANIE";
+"debug.override" = "Lokalne nadpisanie";
+"debug.override.placeholder" = "Wartość JSON lub tekst";
+"debug.override.footer" = "Wpisz JSON (true, 42, \"text\", {\"a\":1}). Wszystko inne jest zapisywane jako tekst. Pozostaw puste, aby użyć wartości zdalnej.";
+"debug.override.remove" = "Usuń nadpisanie";
+"debug.remote" = "Zdalnie";
+"debug.remoteValue" = "Wartość zdalna";
+"debug.refresh" = "Odśwież teraz";
+"debug.resetPresentation" = "Zresetuj przypomnienia i nowości";
+"debug.clearOverrides" = "Wyczyść wszystkie nadpisania";
+"debug.clearCache" = "Wyczyść zapisany snapshot";
+
+/* Push notifications */
+"push.action.yes" = "Tak";
+"push.action.no" = "Nie";
+"push.action.reply" = "Odpowiedz";
+"push.action.reply.send" = "Wyślij";
+"push.action.reply.placeholder" = "Wpisz odpowiedź";
+"question.title" = "Krótkie pytanie";
+"question.answer" = "Twoja odpowiedź";
+"question.answer.placeholder" = "Wpisz tutaj swoją odpowiedź";
+"question.comment" = "Komentarz (opcjonalnie)";
+"question.comment.placeholder" = "Chcesz coś dodać?";
+"question.answered" = "Odpowiedź na to pytanie została już wysłana. Ponowne wysłanie zastąpi wcześniejszą odpowiedź.";
+"question.sent.message" = "Twoja odpowiedź została wysłana. Dziękujemy za pomoc w ulepszaniu aplikacji.";
+"question.unavailable" = "To pytanie nie jest już dostępne.";
+"push.asks.title" = "Pytania od twórcy aplikacji";
+"push.asks.footer" = "Okazjonalne pytania, prośby o opinię i nowości od twórcy aplikacji. Wyłącz, aby przestać je otrzymywać.";
