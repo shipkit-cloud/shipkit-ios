@@ -18,7 +18,7 @@ https://github.com/shipkit-cloud/shipkit-ios.git
 In Xcode: **File > Add Package Dependencies…**, paste the URL, and add the `ShipKit` library to your app target. In `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/shipkit-cloud/shipkit-ios.git", from: "1.1.0")
+.package(url: "https://github.com/shipkit-cloud/shipkit-ios.git", from: "1.1.1")
 // ...
 .product(name: "ShipKit", package: "shipkit-ios")
 ```
@@ -34,7 +34,7 @@ import SwiftUI
 @main
 struct MyApp: App {
     init() {
-        ShipKit.configure(with: "skc_live_...") { o in
+        ShipKit.configure(with: "skc_prod_...") { o in
             o.signingKey = "BASE64_ED25519_PUBLIC_KEY"       // optional, recommended
             o.defaults = ["max_upload_mb": 25]                // fallback values
             o.defaultsResource = "ShipKitDefaults"            // and/or ShipKitDefaults.json / .plist in the main bundle
@@ -186,7 +186,7 @@ In Xcode, add **Push Notifications** under *Signing & Capabilities* (this adds t
 ShipKit reports the token's APNs environment as `sandbox` in debug builds and `production` otherwise. If you ship a release build signed with development provisioning, set it explicitly:
 
 ```swift
-ShipKit.configure(with: "skc_live_...") { o in
+ShipKit.configure(with: "skc_prod_...") { o in
     o.push.environment = .sandbox              // nil (default) = automatic
     o.push.foregroundPresentation = [.banner, .sound, .list]
     o.push.openURL = { url in router.open(url) } // message links; default is UIApplication.shared.open
@@ -201,7 +201,7 @@ SwiftUI apps add an app delegate:
 @main
 struct MyApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    init() { ShipKit.configure(with: "skc_live_...") }
+    init() { ShipKit.configure(with: "skc_prod_...") }
     var body: some Scene { WindowGroup { ContentView().shipKitGate() } }
 }
 
@@ -334,7 +334,7 @@ xcodebuild test -scheme ShipKit -destination 'platform=iOS Simulator,name=iPhone
 
 ## Privacy
 
-- No tracking and no advertising identifiers. The SDK ships a `PrivacyInfo.xcprivacy` that declares no tracking and the UserDefaults API reason `CA92.1`. It also lists the collected data types: device ID (the install UUID), product interaction (pings, flag exposures), customer support content, photos (screenshots the user attaches), plus email, user ID, name and purchase info, which are only sent if you call `identify` or the user types them in.
+- No tracking and no advertising identifiers. The SDK ships a `PrivacyInfo.xcprivacy` that declares no tracking and the UserDefaults API reason `CA92.1`. It lists every data type ShipKit can collect: device ID (the install UUID), product interaction (pings, flag exposures, ratings), customer support content, photos (screenshots the user attaches), plus email, user ID, name and purchase info, which are only sent if you call `identify` or the user types them in. The manifest marks them all as linked to the user, because they are once you call `identify` or the user leaves an email. What you answer in App Store Connect depends on the features you use: see [App Store privacy labels](https://shipkit.cloud/docs/#privacy-labels), or run `npx @shipkit-cloud/cli privacy` in your project folder.
 - The install ID is a random UUID stored in the Keychain, so it stays the same across reinstalls. It isn't derived from any hardware identifier.
 - Request context: app version and build, OS version, device model identifier, locale, language and region, plus whatever you passed to `identify`.
 - Snapshots are cached in `Application Support/ShipKit/`, which is excluded from backups.
