@@ -5,6 +5,7 @@ extension ShipKit {
     public struct UpdateRequiredView: View {
         private let info: VersionInfo
         @Environment(\.openURL) private var openURL
+        static let appStoreFallback = URL(string: "itms-apps://apps.apple.com")!
 
         public init(_ info: VersionInfo) {
             self.info = info
@@ -41,12 +42,11 @@ extension ShipKit {
                 }
                 .padding(.horizontal, 32)
                 Spacer(minLength: 24)
-                if let url = info.storeURL {
-                    Button(L("update.action.update")) { openURL(url) }
-                        .buttonStyle(PrimaryButtonStyle())
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 24)
-                }
+                // Never leave a blocked user without a way forward: with no store link, open the App Store app.
+                Button(L("update.action.update")) { openURL(info.storeURL ?? Self.appStoreFallback) }
+                    .buttonStyle(PrimaryButtonStyle())
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 24)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(uiColor: .systemBackground).ignoresSafeArea())

@@ -18,7 +18,7 @@ https://github.com/shipkit-cloud/shipkit-ios.git
 In Xcode: **File > Add Package Dependencies…**, paste the URL, and add the `ShipKit` library to your app target. In `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/shipkit-cloud/shipkit-ios.git", from: "1.1.1")
+.package(url: "https://github.com/shipkit-cloud/shipkit-ios.git", from: "1.1.2")
 // ...
 .product(name: "ShipKit", package: "shipkit-ios")
 ```

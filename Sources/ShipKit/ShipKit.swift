@@ -6,7 +6,7 @@ private let engineBox = OSAllocatedUnfairLock<Engine?>(initialState: nil)
 
 /// Entry point for remote settings, feature flags, version enforcement and in-app feedback.
 public enum ShipKit {
-    public static let sdkVersion = "1.1.1"
+    public static let sdkVersion = "1.1.2"
 
     static var engine: Engine? { engineBox.withLock { $0 } }
 
