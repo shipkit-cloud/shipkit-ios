@@ -9,7 +9,10 @@ private struct OverrideTarget: Identifiable {
 
 extension ShipKit {
     /// Developer screen: inspect the snapshot, override settings and flags locally (persisted),
-    /// simulate an app version and reset presentation state. Don't ship it to end users.
+    /// simulate an app version and reset presentation state.
+    ///
+    /// Follows `ShipKitOptions.debugTools`: in release builds it shows a "disabled" note and none
+    /// of its tools work, unless the app opts in.
     public struct DebugView: View {
         @ObservedObject private var model = ShipKitModel.shared
         @State private var simulatedVersion = ""
@@ -22,7 +25,9 @@ extension ShipKit {
             let _ = model.revision
             let engine = ShipKit.engine
             Form {
-                if let engine {
+                if let engine, !engine.debugToolsEnabled {
+                    Text(L("debug.disabled")).foregroundStyle(.secondary)
+                } else if let engine {
                     statusSection(engine)
                     versionSection(engine)
                     valuesSection(engine, kind: .setting)
@@ -156,6 +161,7 @@ extension ShipKit {
             case .updateRequired: return "required"
             case .blocked: return "blocked"
             case .maintenance: return "maintenance"
+            case .checkRequired: return "check required"
             }
         }
     }

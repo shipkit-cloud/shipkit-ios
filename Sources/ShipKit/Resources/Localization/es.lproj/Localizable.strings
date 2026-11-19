@@ -171,3 +171,6 @@
 "question.unavailable" = "Esta pregunta ya no está disponible.";
 "push.asks.title" = "Preguntas del desarrollador";
 "push.asks.footer" = "Preguntas ocasionales, solicitudes de opinión y novedades del desarrollador de la app. Desactívalo para dejar de recibirlas.";
+"checkRequired.title" = "Conéctate para continuar";
+"checkRequired.message" = "La app necesita buscar actualizaciones antes de continuar. Conéctate a internet e inténtalo de nuevo.";
+"debug.disabled" = "Las herramientas de depuración están desactivadas en esta compilación.";

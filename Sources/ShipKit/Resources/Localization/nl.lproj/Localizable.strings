@@ -171,3 +171,6 @@
 "question.unavailable" = "Deze vraag is niet meer beschikbaar.";
 "push.asks.title" = "Vragen van de ontwikkelaar";
 "push.asks.footer" = "Af en toe vragen, verzoeken om feedback en nieuws van de ontwikkelaar van de app. Zet dit uit om ze niet meer te ontvangen.";
+"checkRequired.title" = "Maak verbinding om door te gaan";
+"checkRequired.message" = "De app moet op updates controleren voordat je verder kunt. Maak verbinding met internet en probeer het opnieuw.";
+"debug.disabled" = "Debugtools zijn uitgeschakeld in deze build.";

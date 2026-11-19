@@ -76,11 +76,13 @@ struct HomeView: View {
                 }
             }
             .navigationTitle("ShipKit Demo")
+            #if DEBUG
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button("Debug") { showingDebug = true }
                 }
             }
+            #endif
             .sheet(isPresented: $showingDebug) {
                 NavigationStack {
                     ShipKit.DebugView()
@@ -160,9 +162,11 @@ struct SettingsView: View {
                     }
                 }
 
+                #if DEBUG
                 Section {
                     Button("Open Debug Menu") { showingDebug = true }
                 }
+                #endif
             }
             .navigationTitle("Settings")
             .task { await loadNotificationStatus() }

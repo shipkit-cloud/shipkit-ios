@@ -187,6 +187,50 @@ extension ShipKit {
         }
     }
 
+    /// Full-screen, non-dismissible screen shown when no version check has succeeded within
+    /// `ShipKitOptions.versionCheckMaxAge`. Goes away as soon as one does.
+    public struct CheckRequiredView: View {
+        @State private var retrying = false
+
+        public init() {}
+
+        public var body: some View {
+            VStack(spacing: 18) {
+                Spacer()
+                Image(systemName: "wifi.exclamationmark")
+                    .font(.system(size: 60))
+                    .foregroundStyle(ShipKit.theme.primaryColor)
+                    .accessibilityHidden(true)
+                Text(L("checkRequired.title"))
+                    .font(.title.bold())
+                    .multilineTextAlignment(.center)
+                Text(L("checkRequired.message"))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                Spacer()
+                Button {
+                    retrying = true
+                    Task {
+                        await ShipKit.refresh()
+                        retrying = false
+                    }
+                } label: {
+                    if retrying {
+                        ProgressView().tint(.white)
+                    } else {
+                        Text(L("common.retry"))
+                    }
+                }
+                .buttonStyle(PrimaryButtonStyle())
+                .disabled(retrying)
+            }
+            .padding(24)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(uiColor: .systemBackground).ignoresSafeArea())
+            .interactiveDismissDisabled()
+        }
+    }
+
     /// Release notes for the version the user just updated to.
     public struct WhatsNewView: View {
         private let version: String

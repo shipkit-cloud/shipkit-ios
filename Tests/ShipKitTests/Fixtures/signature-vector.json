@@ -1,5 +1,8 @@
 {
-  "publicKey": "q1hncxmwwmjOZxUwhgHeMrotitTQGtLml81Q36ekG0U=",
+  "publicKey": "NGjRkAVnLS8xhrMEFQMdVTjdWaXxCpUAAOrPsyyfleA=",
   "body": "{\"release\":3,\"ttl\":900,\"settings\":{\"greeting\":\"Hej 👋\"},\"flags\":{\"new_ui\":true},\"version\":{\"status\":\"ok\",\"current\":\"2.4.0\"},\"inbox\":{\"unread\":0}}",
-  "signature": "tvp0FKfP1L3HYIApcCEmw1rOOyR8rIVVtJY0P0pT13XgDcVk5fOavZnIVhbaTdbQlcYXziNAq4zA8FqWtfvQAg=="
+  "signature": "GnPgQCucC3ztmwnku3ggTu3tKLIUTg80NAHb1NZZHHJJqdJIxGpH7Rr5beawi6xFRKqvz5wsHCURfXvYCNeWBg==",
+  "stableId": "3f2c9a52-7d1e-4b8a-9c11-0a6f5e4d3c2b",
+  "request": "{\"stableId\":\"3f2c9a52-7d1e-4b8a-9c11-0a6f5e4d3c2b\",\"appVersion\":\"2.4.0\",\"build\":\"87\",\"platform\":\"ios\",\"locale\":\"sv_SE\",\"name\":\"Åsa 👋\",\"nonce\":\"b7a1c0de-0000-4000-8000-000000000001\"}",
+  "signatureV2": "W84REhGlnT/f+DtPCP608RgNnNAg/Zpih07zC5SF3E3QCuTlMG+AnrqPlBsIRWNP1RmlfT9gRRgq5hqUBggKAw=="
 }

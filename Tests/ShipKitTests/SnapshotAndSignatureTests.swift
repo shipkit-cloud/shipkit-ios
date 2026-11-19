@@ -109,6 +109,9 @@ final class SignatureTests: XCTestCase {
         let publicKey: String
         let body: String
         let signature: String
+        let stableId: String
+        let request: String
+        let signatureV2: String
     }
 
     /// Vector produced by the backend's WebCrypto Ed25519 implementation.
@@ -129,6 +132,29 @@ final class SignatureTests: XCTestCase {
         XCTAssertFalse(verifier.isValid(signature: "not base64", for: body))
 
         XCTAssertNoThrow(try ShipKitSnapshot(jsonData: body), "signed body is a valid snapshot")
+    }
+
+    /// The request-bound signature, as produced by the backend.
+    func testBackendRequestBoundSignatureVector() throws {
+        guard let data = TestEnv.fixture("signature-vector", ext: "json") else {
+            throw XCTSkip("Fixtures/signature-vector.json not present")
+        }
+        let vector = try JSONDecoder().decode(Vector.self, from: data)
+        let verifier = try XCTUnwrap(SignatureVerifier(base64PublicKey: vector.publicKey))
+        let request = Data(vector.request.utf8)
+        let body = Data(vector.body.utf8)
+
+        XCTAssertTrue(verifier.isValid(signature: vector.signatureV2, stableID: vector.stableId, requestBody: request, responseBody: body))
+        XCTAssertTrue(verifier.isValid(signature: vector.signatureV2, stableID: vector.stableId.uppercased(), requestBody: request, responseBody: body))
+
+        let otherVersion = Data(vector.request.replacingOccurrences(of: "2.4.0", with: "99.0.0").utf8)
+        XCTAssertFalse(verifier.isValid(signature: vector.signatureV2, stableID: vector.stableId, requestBody: otherVersion, responseBody: body))
+        let otherNonce = Data(vector.request.replacingOccurrences(of: "000000000001", with: "000000000002").utf8)
+        XCTAssertFalse(verifier.isValid(signature: vector.signatureV2, stableID: vector.stableId, requestBody: otherNonce, responseBody: body))
+        XCTAssertFalse(verifier.isValid(signature: vector.signatureV2, stableID: "another-install", requestBody: request, responseBody: body))
+        XCTAssertFalse(verifier.isValid(signature: vector.signatureV2, stableID: vector.stableId, requestBody: request, responseBody: body + Data(" ".utf8)))
+        XCTAssertFalse(verifier.isValid(signature: vector.signature, stableID: vector.stableId, requestBody: request, responseBody: body), "the body-only signature is not a V2 signature")
+        XCTAssertFalse(verifier.isValid(signature: nil, stableID: vector.stableId, requestBody: request, responseBody: body))
     }
 
     func testCryptoKitRoundTrip() throws {

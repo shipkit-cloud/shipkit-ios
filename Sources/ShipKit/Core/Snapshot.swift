@@ -195,10 +195,13 @@ public enum VersionStatus: Sendable, Equatable {
     case updateRequired(VersionInfo)
     case blocked(VersionInfo)
     case maintenance(VersionInfo)
+    /// No version check has succeeded within `ShipKitOptions.versionCheckMaxAge`. The app is held
+    /// until one does.
+    case checkRequired
 
     public var info: VersionInfo? {
         switch self {
-        case .ok: return nil
+        case .ok, .checkRequired: return nil
         case .updateRecommended(let info), .updateRequired(let info), .blocked(let info), .maintenance(let info): return info
         }
     }
@@ -206,7 +209,7 @@ public enum VersionStatus: Sendable, Equatable {
     /// `true` for states that must cover the whole app.
     public var isBlocking: Bool {
         switch self {
-        case .updateRequired, .blocked, .maintenance: return true
+        case .updateRequired, .blocked, .maintenance, .checkRequired: return true
         case .ok, .updateRecommended: return false
         }
     }

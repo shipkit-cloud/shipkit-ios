@@ -39,6 +39,8 @@ struct RequestContext: Codable, Equatable, Sendable {
     var region: String?
     var device: String?
     var attributes: [String: ShipKitValue]?
+    /// Unique per snapshot request, so a signed answer to one request can't be reused for another.
+    var nonce: String?
 }
 
 enum DeviceInfo {

@@ -171,3 +171,6 @@
 "question.unavailable" = "Questa domanda non è più disponibile.";
 "push.asks.title" = "Domande dallo sviluppatore";
 "push.asks.footer" = "Domande occasionali, richieste di feedback e novità dallo sviluppatore dell’app. Disattiva per non riceverle più.";
+"checkRequired.title" = "Connettiti per continuare";
+"checkRequired.message" = "L’app deve verificare la disponibilità di aggiornamenti prima di continuare. Connettiti a internet e riprova.";
+"debug.disabled" = "Gli strumenti di debug sono disattivati in questa build.";

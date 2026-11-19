@@ -18,7 +18,7 @@ https://github.com/shipkit-cloud/shipkit-ios.git
 In Xcode: **File > Add Package Dependencies…**, paste the URL, and add the `ShipKit` library to your app target. In `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/shipkit-cloud/shipkit-ios.git", from: "1.1.2")
+.package(url: "https://github.com/shipkit-cloud/shipkit-ios.git", from: "1.2.0")
 // ...
 .product(name: "ShipKit", package: "shipkit-ios")
 ```
@@ -35,7 +35,7 @@ import SwiftUI
 struct MyApp: App {
     init() {
         ShipKit.configure(with: "skc_prod_...") { o in
-            o.signingKey = "BASE64_ED25519_PUBLIC_KEY"       // optional, recommended
+            o.signingKey = "BASE64_ED25519_PUBLIC_KEY"       // needed for tamper-proof version rules
             o.defaults = ["max_upload_mb": 25]                // fallback values
             o.defaultsResource = "ShipKitDefaults"            // and/or ShipKitDefaults.json / .plist in the main bundle
             o.refresh = .onForeground(minInterval: 900)       // or .manual
@@ -56,7 +56,9 @@ struct MyApp: App {
 | Option | Default | Notes |
 |---|---|---|
 | `apiURL` | `https://api.shipkit.cloud` | Set it only for staging or local backends. |
-| `signingKey` | `nil` | Base64 of the raw 32-byte Ed25519 public key from the dashboard. |
+| `signingKey` | `nil` | Base64 of the raw 32-byte Ed25519 public key from the dashboard. Set it: without it version rules can be changed in transit. See [Signed snapshots](#signed-snapshots). |
+| `versionCheckMaxAge` | `nil` | Longest time the app may go without a successful check before it shows a "connect to continue" screen. See [Offline behaviour](#offline-behaviour). |
+| `debugTools` | `.automatic` | On in debug builds, off in release builds. `.enabled` turns the developer tools on in every build. |
 | `defaults` / `defaultsResource` | empty | Used before the first snapshot and for missing keys. |
 | `refresh` | `.onForeground(minInterval: 900)` | Always refreshes on launch. |
 | `lockFlagsOnLaunch` | `false` | Fresh values apply on next launch. |
@@ -64,6 +66,8 @@ struct MyApp: App {
 | `push` | automatic | `environment`, `foregroundPresentation` and `openURL`. See [Push notifications](#push-notifications). |
 
 **Overrides for development and tests**
+
+These only work while `debugTools` is on, which by default means debug builds. A release build ignores them unless you set `o.debugTools = .enabled`, which you should only do for internal builds.
 
 - Environment variable `SHIPKIT_API_URL` (or launch argument `-ShipKitAPIURL <url>`) replaces the API URL, for example `http://localhost:8787`. For plain-HTTP local backends add `NSAppTransportSecurity > NSAllowsLocalNetworking = YES` to your Info.plist.
 - Launch argument `-ShipKitSimulateVersion 1.0.0`, or the UserDefaults key `ShipKitSimulatedAppVersion`, sends a different marketing version to the backend. `ShipKit.DebugView()` sets the key for you.
@@ -76,6 +80,8 @@ ShipKit.identify(userID: "u_123", email: "ana@example.com", name: "Ana",
 ```
 
 The identity is saved, sent to `POST /v1/identify` and included in every request context, so targeting rules and feedback threads follow the user.
+
+`paymentMonthly` is taken at the app's word, up to a ceiling you set per project (Settings → General in the dashboard, 100 by default). Your client key ships inside the app, so someone determined can send their own value. If revenue per feature request matters to your decisions, switch the project to backend-only revenue and set amounts from your server with the management API; values sent by the app are then ignored.
 
 ## Settings and flags
 
@@ -304,11 +310,44 @@ The sample delivery IDs don't exist on a real backend, so sending an answer from
 
 ## Signed snapshots
 
-When `signingKey` is set, every `200` snapshot must carry a valid `X-ShipKit-Signature`. That header is a base64 Ed25519 signature over the exact response body bytes, checked with CryptoKit. A missing or invalid signature is rejected, and the last verified snapshot stays in effect. `304 Not Modified` responses carry no signature and keep the cached snapshot. Copy the public key (base64 of the raw 32 bytes) from the dashboard.
+When `signingKey` is set, every snapshot response, `200` and `304 Not Modified` alike, must carry a valid `X-ShipKit-Signature-V2`. Copy the public key (base64 of the raw 32 bytes) from the dashboard.
+
+The header is a base64 Ed25519 signature, checked with CryptoKit, over this string:
+
+```
+shipkit-snapshot-v2\n<install ID>\n<SHA-256 hex of the request body>\n<SHA-256 hex of the response body>
+```
+
+Because the request is part of what is signed, and every request carries a fresh `nonce`, the SDK only accepts an answer to the exact request it just sent. That rules out:
+
+- editing the response (for example turning `required` into `ok`),
+- editing the request so the server evaluates another app version, user or attribute,
+- replaying a response captured earlier or on another device,
+- answering `304` to everything to freeze the cache.
+
+A response that fails the check is dropped and the last verified snapshot stays in effect. The cached snapshot is stored with its request and signature and checked again on every launch, so an edited cache is dropped too.
+
+Without `signingKey` none of this applies and the SDK trusts whatever arrives over TLS.
+
+### Offline behaviour
+
+By default the SDK never holds the app when it can't reach ShipKit: it runs on the last verified snapshot, or on bundled defaults when there is none. A block that is already cached stays in force offline, but a new rule can't arrive, so someone who cuts the app off from the network keeps the old answer.
+
+If a required update must not be avoidable that way, set a limit:
+
+```swift
+o.versionCheckMaxAge = 7 * 86_400   // seven days
+```
+
+Once that long has passed without a successful check (counted from first launch on a new install), `VersionStatus` becomes `.checkRequired` and `.shipKitGate()` shows `ShipKit.CheckRequiredView`, a "connect to continue" screen with a retry button. It lifts on the next successful check. Pick a window your offline users can live with.
+
+Version rules are enforced by code on the user's device. They hold against proxies and edited files; someone who modifies the app binary can still remove them, so don't make them the only guard for anything critical.
 
 ## Debug screen
 
-`ShipKit.DebugView()` lists every setting and flag with its source. You can override values locally (the overrides persist), simulate an app version, trigger a refresh, clear the cache and reset reminder and What's New state. Keep it out of release builds.
+`ShipKit.DebugView()` lists every setting and flag with its source. You can override values locally (the overrides persist), simulate an app version, trigger a refresh, clear the cache and reset reminder and What's New state.
+
+It follows `debugTools`. In a release build it shows "Debug tools are disabled in this build", and version simulation, stored overrides and the API URL override are ignored, so shipping the screen by accident gives nobody a way past your version rules. Set `o.debugTools = .enabled` to use it in an internal or TestFlight build.
 
 ## Testing
 

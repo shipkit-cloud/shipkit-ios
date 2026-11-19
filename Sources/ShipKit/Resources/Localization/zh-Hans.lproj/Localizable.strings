@@ -171,3 +171,6 @@
 "question.unavailable" = "此问题已不再可用。";
 "push.asks.title" = "来自开发者的提问";
 "push.asks.footer" = "开发者偶尔发送的提问、反馈邀请和新闻。关闭后将不再收到。";
+"checkRequired.title" = "连接网络以继续";
+"checkRequired.message" = "继续之前，App 需要检查更新。请连接互联网后重试。";
+"debug.disabled" = "此构建版本已停用调试工具。";

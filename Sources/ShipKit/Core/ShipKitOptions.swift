@@ -11,7 +11,8 @@ public enum ShipKitDefaults {
     /// Launch argument / UserDefaults key that overrides the API URL (`-ShipKitAPIURL http://...`).
     public static let apiURLDefaultsKey = "ShipKitAPIURL"
 
-    /// UserDefaults key holding a simulated marketing version (set by `DebugView`).
+    /// UserDefaults key holding a simulated marketing version (set by `DebugView`). Only read when
+    /// `ShipKitOptions.debugTools` is enabled, like the three keys above and below.
     public static let simulatedVersionKey = "ShipKitSimulatedAppVersion"
 
     /// Launch argument that simulates a marketing version (`-ShipKitSimulateVersion 1.0.0`).
@@ -25,6 +26,30 @@ public enum ShipKitRefreshPolicy: Sendable, Equatable {
     case manual
 }
 
+/// Controls the developer tools: `ShipKit.DebugView`, version simulation, local setting and flag
+/// overrides, and the API URL override.
+public enum ShipKitDebugTools: Sendable, Equatable {
+    /// On in debug builds, off in release builds.
+    case automatic
+    /// On in every build. Use for internal or TestFlight builds only: with these tools anyone
+    /// holding the device can get past version rules.
+    case enabled
+    case disabled
+
+    var isEnabled: Bool {
+        switch self {
+        case .enabled: return true
+        case .disabled: return false
+        case .automatic:
+            #if DEBUG
+            return true
+            #else
+            return false
+            #endif
+        }
+    }
+}
+
 public enum ShipKitTelemetry: Sendable, Equatable {
     /// One ping per day plus flag exposure counts.
     case on
@@ -33,9 +58,19 @@ public enum ShipKitTelemetry: Sendable, Equatable {
 
 public struct ShipKitOptions: Sendable {
     public var apiURL: URL = ShipKitDefaults.apiURL
-    /// Base64 of the raw 32-byte Ed25519 public key from the dashboard. When set, unsigned or
-    /// tampered snapshots are rejected and the cached snapshot stays in effect.
+    /// Base64 of the raw 32-byte Ed25519 public key from the dashboard. When set, a snapshot is only
+    /// accepted if the server signed it for this install and this exact request; anything unsigned,
+    /// edited, replayed or answering a changed request is rejected and the cached snapshot stays in
+    /// effect. Without it, version rules can be tampered with in transit.
     public var signingKey: String?
+    /// How long the app may go without a successful version check before it is held on a
+    /// "connect to continue" screen (`VersionStatus.checkRequired`). `nil`, the default, never
+    /// holds the app: with no network it runs on the last snapshot it has, which also means that
+    /// blocking the network skips new version rules. Set it (for example `7 * 86_400`) when a
+    /// required update must not be avoidable that way.
+    public var versionCheckMaxAge: TimeInterval?
+    /// Developer tools. Off in release builds unless you opt in.
+    public var debugTools: ShipKitDebugTools = .automatic
     /// Fallback values used before the first snapshot arrives and for keys missing from it.
     public var defaults: [String: ShipKitValue] = [:]
     /// Name of a `.json` or `.plist` file in the main bundle with fallback values.

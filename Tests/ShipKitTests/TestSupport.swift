@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 import os
 @testable import ShipKit
@@ -116,5 +117,33 @@ enum TestEnv {
     static func fixture(_ name: String, ext: String) -> Data? {
         guard let url = Bundle.module.url(forResource: name, withExtension: ext, subdirectory: "Fixtures") else { return nil }
         return try? Data(contentsOf: url)
+    }
+}
+
+/// Signs mock snapshot responses the way the backend does.
+struct TestSigner: Sendable {
+    let key = Curve25519.Signing.PrivateKey()
+
+    var publicKey: String { key.publicKey.rawRepresentation.base64EncodedString() }
+
+    /// `X-ShipKit-Signature-V2` for `body` as the answer to `request`.
+    func signature(for request: RecordedRequest, body: Data) -> String {
+        let input = SignatureVerifier.signingInput(
+            stableID: request.headers["X-ShipKit-Stable-Id"] ?? "",
+            requestBody: request.body ?? Data(),
+            responseBody: body
+        )
+        return (try? key.signature(for: input).base64EncodedString()) ?? ""
+    }
+
+    func ok(_ request: RecordedRequest, body: Data, etag: String? = nil) -> MockResponse {
+        var headers = ["X-ShipKit-Signature-V2": signature(for: request, body: body)]
+        headers["ETag"] = etag
+        return MockResponse(status: 200, headers: headers, body: body)
+    }
+
+    /// A signed "not modified" for the body the client already has.
+    func notModified(_ request: RecordedRequest, cachedBody: Data) -> MockResponse {
+        MockResponse(status: 304, headers: ["X-ShipKit-Signature-V2": signature(for: request, body: cachedBody)])
     }
 }

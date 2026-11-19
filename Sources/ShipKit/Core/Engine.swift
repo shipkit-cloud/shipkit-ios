@@ -46,6 +46,8 @@ final class Engine: Sendable {
 
     private struct State: Sendable {
         var snapshot: ShipKitSnapshot?
+        /// Exact bytes of `snapshot` as the server sent them; a "not modified" answer is verified against these.
+        var body: Data?
         var meta: SnapshotMeta?
         var lockedSettings: [String: ShipKitValue]?
         var lockedFlags: [String: ShipKitValue]?
@@ -67,6 +69,8 @@ final class Engine: Sendable {
     let store: SnapshotStore
     let queue: FeedbackQueue
     let bundledDefaults: [String: ShipKitValue]
+    /// When this install first ran, the reference point for `versionCheckMaxAge` before any check succeeds.
+    let firstLaunch: Date
     private let verifier: SignatureVerifier?
     private let state: OSAllocatedUnfairLock<State>
     private let refreshGate = RefreshGate()
@@ -75,6 +79,11 @@ final class Engine: Sendable {
 
     var options: ShipKitOptions { configuration.options }
     var preferences: Preferences { configuration.preferences }
+
+    /// Version simulation, local overrides and the other developer tools. Off in release builds
+    /// unless the app opts in, so nothing on the device can switch them on.
+    var debugToolsEnabled: Bool { options.debugTools.isEnabled }
+    private var signingEnabled: Bool { options.signingKey != nil }
 
     init(configuration: Configuration, testSnapshot: ShipKitSnapshot? = nil, onChange: @escaping @Sendable () -> Void = {}) {
         self.configuration = configuration
@@ -96,13 +105,31 @@ final class Engine: Sendable {
             return verifier
         }
         bundledDefaults = Self.loadDefaults(options: configuration.options)
+        if configuration.options.signingKey == nil, configuration.networkEnabled {
+            ShipKitLog.error("No signingKey set: snapshots are not verified, so version rules can be tampered with in transit. Copy the key from the dashboard.")
+        }
+
+        let storedFirstLaunch = configuration.persistent ? preferences.defaults.object(forKey: Preferences.Key.firstLaunch.rawValue) as? Double : nil
+        if let storedFirstLaunch {
+            firstLaunch = Date(timeIntervalSince1970: storedFirstLaunch)
+        } else {
+            firstLaunch = Date()
+            if configuration.persistent { preferences.set(firstLaunch.timeIntervalSince1970, for: .firstLaunch) }
+        }
 
         var initial = State()
         if let testSnapshot {
             initial.snapshot = testSnapshot
-        } else if configuration.persistent, let cached = store.load() {
-            initial.snapshot = cached.snapshot
-            initial.meta = cached.meta
+        } else if configuration.persistent {
+            // With signing on, the cache has to prove itself again; with a key that can't be parsed nothing can.
+            let signing = configuration.options.signingKey != nil
+            if signing, verifier == nil {
+                store.clear()
+            } else if let cached = store.load(verifier: verifier, stableID: stableID) {
+                initial.snapshot = cached.snapshot
+                initial.body = cached.body
+                initial.meta = cached.meta
+            }
         }
         if configuration.options.lockFlagsOnLaunch, let snapshot = initial.snapshot {
             initial.lockedSettings = snapshot.settings
@@ -110,7 +137,9 @@ final class Engine: Sendable {
         }
         initial.unread = initial.snapshot?.inbox?.unread ?? 0
         if configuration.persistent {
-            initial.overrides = preferences.decode(Overrides.self, .overrides) ?? Overrides()
+            if configuration.options.debugTools.isEnabled {
+                initial.overrides = preferences.decode(Overrides.self, .overrides) ?? Overrides()
+            }
             initial.identity = preferences.decode(Identity.self, .identity) ?? Identity()
             initial.reminder = preferences.decode(ReminderState.self, .reminderState) ?? ReminderState()
         }
@@ -186,6 +215,7 @@ final class Engine: Sendable {
     // MARK: - Version
 
     var runningVersionString: String {
+        guard debugToolsEnabled else { return configuration.appInfo.marketingVersion }
         let defaults = preferences.defaults
         for key in [ShipKitDefaults.simulatedVersionKey, ShipKitDefaults.simulateVersionArgumentKey] {
             if let simulated = defaults.string(forKey: key)?.trimmingCharacters(in: .whitespaces), !simulated.isEmpty {
@@ -200,9 +230,22 @@ final class Engine: Sendable {
     }
 
     var currentVersionStatus: VersionStatus {
-        let (info, meta) = state.withLock { ($0.snapshot?.version, $0.meta) }
+        let (info, meta, attempted) = state.withLock { ($0.snapshot?.version, $0.meta, $0.refreshedThisSession) }
         let fetchedFor = meta.map { AppVersion($0.appVersion, build: $0.build) }
-        return VersionEvaluator.status(for: info, fetchedFor: fetchedFor, running: runningVersion)
+        let status = VersionEvaluator.status(for: info, fetchedFor: fetchedFor, running: runningVersion)
+        // Only once this session's own check has had its chance, so a slow launch doesn't flash the screen.
+        if !status.isBlocking, attempted, isVersionCheckOverdue(lastChecked: meta?.fetchedAt) {
+            return .checkRequired
+        }
+        return status
+    }
+
+    /// `true` when `versionCheckMaxAge` is set and no check has succeeded within it.
+    func isVersionCheckOverdue(lastChecked: Date?, now: Date = Date()) -> Bool {
+        guard let maxAge = options.versionCheckMaxAge, maxAge > 0, configuration.networkEnabled else { return false }
+        let age = now.timeIntervalSince(lastChecked ?? firstLaunch)
+        // A last check far in the future means the clock was moved back; that doesn't buy more time.
+        return age > maxAge || age < -86_400
     }
 
     func versionStatus() async -> VersionStatus {
@@ -294,53 +337,78 @@ final class Engine: Sendable {
 
     func fetchSnapshot() async throws {
         let api = try client()
-        let context = makeContext()
-        let etag = state.withLock { $0.snapshot != nil ? $0.meta?.etag : nil }
+        let context = {
+            var context = makeContext()
+            context.nonce = UUID().uuidString.lowercased()
+            return context
+        }()
+        let (etag, cachedBody) = state.withLock { state in
+            (state.body != nil ? state.meta?.etag : nil, state.body)
+        }
         let body = try JSON.encoder.encode(context)
         let (data, response) = try await api.send(
             "POST", "v1/snapshot",
             body: body,
             headers: etag.map { ["If-None-Match": $0] } ?? [:]
         )
+        let signature = response.value(forHTTPHeaderField: "X-ShipKit-Signature-V2")
 
         if response.statusCode == 304 {
+            // "Not modified" has to be signed for this request too, or a proxy could freeze the
+            // cache by answering 304 to everything.
+            guard etag != nil, let cachedBody else { throw ShipKitError.invalidResponse }
+            try verify(signature, request: body, response: cachedBody)
             let meta = state.withLock { state -> SnapshotMeta? in
                 guard var meta = state.meta else { return nil }
                 meta.fetchedAt = Date()
                 meta.appVersion = context.appVersion
                 meta.build = context.build
+                meta.signature = signature
                 state.meta = meta
                 return meta
             }
-            if let meta, configuration.persistent { store.updateMeta(meta) }
+            if let meta, configuration.persistent { store.update(meta: meta, request: body) }
             return
         }
 
-        if let verifier, !verifier.isValid(signature: response.value(forHTTPHeaderField: "X-ShipKit-Signature"), for: data) {
-            throw ShipKitError.invalidSignature
-        }
+        try verify(signature, request: body, response: data)
         let snapshot: ShipKitSnapshot
         do {
             snapshot = try ShipKitSnapshot(jsonData: data)
         } catch {
             throw ShipKitError.invalidResponse
         }
+        // The server echoes the version it evaluated. If that isn't the version this app sent, the
+        // request was changed on the way and the status in the answer is for some other version.
+        if let evaluated = snapshot.version?.current, context.appVersion.count <= 32,
+           AppVersion(evaluated).compareVersion(to: AppVersion(context.appVersion)) != .orderedSame {
+            throw ShipKitError.invalidResponse
+        }
         let meta = SnapshotMeta(
             etag: response.value(forHTTPHeaderField: "ETag"),
             fetchedAt: Date(),
             appVersion: context.appVersion,
-            build: context.build
+            build: context.build,
+            signature: signature
         )
-        if configuration.persistent { store.save(body: data, meta: meta) }
+        if configuration.persistent { store.save(body: data, request: body, meta: meta) }
         let lock = options.lockFlagsOnLaunch
         state.withLock { state in
             state.snapshot = snapshot
+            state.body = data
             state.meta = meta
             state.unread = snapshot.inbox?.unread ?? state.unread
             if lock, state.lockedSettings == nil {
                 state.lockedSettings = snapshot.settings
                 state.lockedFlags = snapshot.flags
             }
+        }
+    }
+
+    private func verify(_ signature: String?, request: Data, response: Data) throws {
+        guard signingEnabled else { return }
+        guard let verifier, verifier.isValid(signature: signature, stableID: stableID, requestBody: request, responseBody: response) else {
+            throw ShipKitError.invalidSignature
         }
     }
 
@@ -566,6 +634,7 @@ final class Engine: Sendable {
     }
 
     private func mutateOverrides(_ change: @Sendable (inout Overrides) -> Void) {
+        guard debugToolsEnabled else { return }
         let updated = state.withLock { state in
             change(&state.overrides)
             return state.overrides
@@ -575,6 +644,7 @@ final class Engine: Sendable {
     }
 
     func setSimulatedVersion(_ version: String?) {
+        guard debugToolsEnabled else { return }
         let trimmed = version?.trimmingCharacters(in: .whitespaces)
         preferences.defaults.set((trimmed?.isEmpty ?? true) ? nil : trimmed, forKey: ShipKitDefaults.simulatedVersionKey)
         onChange()
@@ -584,6 +654,7 @@ final class Engine: Sendable {
         store.clear()
         state.withLock { state in
             state.snapshot = nil
+            state.body = nil
             state.meta = nil
             state.lockedSettings = nil
             state.lockedFlags = nil

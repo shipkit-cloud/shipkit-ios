@@ -14,6 +14,7 @@ struct Preferences: @unchecked Sendable {
         case pushToken = "ShipKit.pushToken"
         case pushAsks = "ShipKit.pushAsks"
         case pushPendingAnswers = "ShipKit.pushPendingAnswers"
+        case firstLaunch = "ShipKit.firstLaunch"
     }
 
     func data(_ key: Key) -> Data? { defaults.data(forKey: key.rawValue) }
@@ -83,9 +84,18 @@ struct SnapshotMeta: Codable, Equatable, Sendable {
     var fetchedAt: Date
     var appVersion: String
     var build: String?
+    /// `X-ShipKit-Signature-V2` of the cached body for the cached request.
+    var signature: String?
 }
 
-/// Persists the last verified snapshot body and its metadata under Application Support/ShipKit/.
+struct CachedSnapshot: Sendable {
+    var snapshot: ShipKitSnapshot
+    var body: Data
+    var meta: SnapshotMeta
+}
+
+/// Persists the last verified snapshot body, the request it answers and its metadata under
+/// Application Support/ShipKit/.
 struct SnapshotStore: Sendable {
     let directory: URL
 
@@ -96,34 +106,61 @@ struct SnapshotStore: Sendable {
     }
 
     private var bodyURL: URL { directory.appendingPathComponent("snapshot.json") }
+    private var requestURL: URL { directory.appendingPathComponent("snapshot-request.json") }
     private var metaURL: URL { directory.appendingPathComponent("snapshot-meta.json") }
 
-    func load() -> (snapshot: ShipKitSnapshot, meta: SnapshotMeta)? {
+    private static let writeOptions: Data.WritingOptions = [.atomic, .completeFileProtectionUntilFirstUserAuthentication]
+
+    /// Loads the cached snapshot.
+    ///
+    /// With a `verifier`, the cache is only trusted if its stored signature still matches the stored
+    /// request and body for this install, and the version it was fetched for is read from that
+    /// signed request. A cache that was edited or copied from elsewhere is dropped.
+    func load(verifier: SignatureVerifier? = nil, stableID: String = "") -> CachedSnapshot? {
         guard let body = try? Data(contentsOf: bodyURL),
               let metaData = try? Data(contentsOf: metaURL),
-              let meta = try? JSON.decoder.decode(SnapshotMeta.self, from: metaData),
+              var meta = try? JSON.decoder.decode(SnapshotMeta.self, from: metaData),
               let snapshot = try? ShipKitSnapshot(jsonData: body) else { return nil }
-        return (snapshot, meta)
+        if let verifier {
+            guard let request = try? Data(contentsOf: requestURL),
+                  verifier.isValid(signature: meta.signature, stableID: stableID, requestBody: request, responseBody: body),
+                  let context = try? JSON.decoder.decode(RequestContext.self, from: request) else {
+                clear()
+                return nil
+            }
+            meta.appVersion = context.appVersion
+            meta.build = context.build
+        }
+        return CachedSnapshot(snapshot: snapshot, body: body, meta: meta)
     }
 
-    func save(body: Data, meta: SnapshotMeta) {
+    /// Saves a new body. `request` is the exact request it answers.
+    func save(body: Data, request: Data, meta: SnapshotMeta) {
         do {
             try ensureDirectory()
-            try body.write(to: bodyURL, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
-            try JSON.encoder.encode(meta).write(to: metaURL, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+            try body.write(to: bodyURL, options: Self.writeOptions)
+            try request.write(to: requestURL, options: Self.writeOptions)
+            try JSON.encoder.encode(meta).write(to: metaURL, options: Self.writeOptions)
         } catch {
             ShipKitLog.error("Could not write snapshot cache: \(error.localizedDescription)")
         }
     }
 
-    func updateMeta(_ meta: SnapshotMeta) {
-        try? ensureDirectory()
-        try? JSON.encoder.encode(meta).write(to: metaURL, options: .atomic)
+    /// Records a "not modified" answer: the body stays, the request and metadata are replaced.
+    func update(meta: SnapshotMeta, request: Data) {
+        do {
+            try ensureDirectory()
+            try request.write(to: requestURL, options: Self.writeOptions)
+            try JSON.encoder.encode(meta).write(to: metaURL, options: Self.writeOptions)
+        } catch {
+            ShipKitLog.error("Could not update snapshot cache: \(error.localizedDescription)")
+        }
     }
 
     func clear() {
-        try? FileManager.default.removeItem(at: bodyURL)
-        try? FileManager.default.removeItem(at: metaURL)
+        for url in [bodyURL, requestURL, metaURL] {
+            try? FileManager.default.removeItem(at: url)
+        }
     }
 
     func ensureDirectory() throws {

@@ -171,3 +171,6 @@
 "question.unavailable" = "この質問は現在ご利用いただけません。";
 "push.asks.title" = "開発者からの質問";
 "push.asks.footer" = "アプリの開発者からの質問、フィードバックのお願い、お知らせがときどき届きます。受け取らない場合はオフにしてください。";
+"checkRequired.title" = "接続して続ける";
+"checkRequired.message" = "続ける前にアップデートの確認が必要です。インターネットに接続して、もう一度お試しください。";
+"debug.disabled" = "このビルドではデバッグツールは無効です。";

@@ -6,7 +6,7 @@ private let engineBox = OSAllocatedUnfairLock<Engine?>(initialState: nil)
 
 /// Entry point for remote settings, feature flags, version enforcement and in-app feedback.
 public enum ShipKit {
-    public static let sdkVersion = "1.1.2"
+    public static let sdkVersion = "1.2.0"
 
     static var engine: Engine? { engineBox.withLock { $0 } }
 
@@ -28,7 +28,7 @@ public enum ShipKit {
     public static func configure(with clientKey: String, _ configure: (inout ShipKitOptions) -> Void = { _ in }) {
         var options = ShipKitOptions()
         configure(&options)
-        if let override = apiURLOverride() { options.apiURL = override }
+        if options.debugTools.isEnabled, let override = apiURLOverride() { options.apiURL = override }
 
         let sessionConfiguration = URLSessionConfiguration.default
         sessionConfiguration.timeoutIntervalForRequest = options.requestTimeout

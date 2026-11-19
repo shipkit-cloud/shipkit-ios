@@ -171,3 +171,6 @@
 "question.unavailable" = "Diese Frage ist nicht mehr verfügbar.";
 "push.asks.title" = "Fragen vom Entwickler";
 "push.asks.footer" = "Gelegentliche Fragen, Feedback-Anfragen und Neuigkeiten vom Entwickler der App. Schalte dies aus, um sie nicht mehr zu erhalten.";
+"checkRequired.title" = "Verbindung erforderlich";
+"checkRequired.message" = "Die App muss nach Updates suchen, bevor es weitergeht. Stelle eine Internetverbindung her und versuche es erneut.";
+"debug.disabled" = "Die Debug-Werkzeuge sind in diesem Build deaktiviert.";

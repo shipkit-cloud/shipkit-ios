@@ -171,3 +171,6 @@
 "question.unavailable" = "This question is no longer available.";
 "push.asks.title" = "Questions from the developer";
 "push.asks.footer" = "Occasional questions, feedback requests and news from the app's developer. Turn this off to stop receiving them.";
+"checkRequired.title" = "Connect to continue";
+"checkRequired.message" = "This app needs to check for updates before you can carry on. Connect to the internet and try again.";
+"debug.disabled" = "Debug tools are disabled in this build.";

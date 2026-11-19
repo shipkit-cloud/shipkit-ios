@@ -4,6 +4,7 @@ extension View {
     /// Enforces version policy on the view it's applied to (usually the app's root view).
     ///
     /// - `required`, `blocked` and `maintenance` cover the app full-screen and can't be dismissed.
+    /// - `checkRequired` (only with `versionCheckMaxAge`) covers the app until a check succeeds.
     /// - `recommended` shows a dismissible reminder, following the server's reminder cadence.
     /// - What's New is shown once on the version it describes.
     /// - Hosts the shake-to-report form when `ShipKit.config.feedback.shakeToReport` is enabled.
@@ -160,6 +161,8 @@ private struct BlockingScreen: View {
             ShipKit.MaintenanceView(info)
         case .updateRequired(let info), .blocked(let info):
             ShipKit.UpdateRequiredView(info)
+        case .checkRequired:
+            ShipKit.CheckRequiredView()
         case .ok, .updateRecommended:
             Color(uiColor: .systemBackground).ignoresSafeArea()
         }
