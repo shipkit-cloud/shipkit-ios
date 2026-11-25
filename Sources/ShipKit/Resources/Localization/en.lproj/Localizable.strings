@@ -174,3 +174,13 @@
 "checkRequired.title" = "Connect to continue";
 "checkRequired.message" = "This app needs to check for updates before you can carry on. Connect to the internet and try again.";
 "debug.disabled" = "Debug tools are disabled in this build.";
+
+/* Custom feedback forms and status updates */
+"feedback.email.footer.updates" = "Used to reply to you and to tell you when the status changes.";
+"feedback.field.optional" = "%@ (optional)";
+"feedback.required.hint" = "Required";
+"feedback.error.email" = "Enter a valid email address.";
+"push.updates.title" = "Status updates";
+"push.updates.footer" = "Notifications when feedback or feature requests you sent or voted for change status. Turn this off to stop receiving them.";
+"statusUpdate.unavailable" = "This item is no longer available.";
+"feedback.email.label" = "Email";

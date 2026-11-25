@@ -61,6 +61,19 @@ extension ShipKit {
         try await engine.setPushAsks(enabled)
     }
 
+    /// Whether this install gets status updates about feedback and feature requests the user sent
+    /// or voted for. Served from cache; updated whenever the token is registered or the preference changes.
+    public static var pushUpdatesEnabled: Bool {
+        engine?.pushUpdatesEnabled ?? true
+    }
+
+    /// Turns status update pushes on or off for this install. `ShipKitPushUpdatesToggle` wraps this
+    /// in a settings row.
+    public static func setPushUpdates(_ enabled: Bool) async throws {
+        guard let engine else { throw ShipKitError.notConfigured }
+        try await engine.setPushUpdates(enabled)
+    }
+
     // MARK: - Handling
 
     /// The notification categories ShipKit registers (merged with your own when ShipKit is configured).
@@ -229,8 +242,10 @@ final class PushCoordinator {
         case UNNotificationDismissActionIdentifier:
             if let deliveryID { await engine.markPushOpened(deliveryID, action: "dismiss") }
         case UNNotificationDefaultActionIdentifier:
+            let updateID = event.payload.kind == .update ? event.payload.updateID : nil
             let opened = Task {
                 if let deliveryID { await engine.markPushOpened(deliveryID, action: "open") }
+                if let updateID { await engine.markUpdateOpened(updateID) }
             }
             await open(event.payload, engine: engine)
             await opened.value
@@ -259,6 +274,13 @@ final class PushCoordinator {
             present(.feedback(deliveryID: payload.deliveryID, prompt: payload.feedbackPrompt))
         case .question?:
             present(.question(payload))
+        case .update?:
+            let target: ShipKitUpdateTarget = payload.target == "request" ? .featureRequest(id: payload.ref) : .feedbackThread(id: payload.ref)
+            if let handler = engine.options.push.openUpdate {
+                handler(target)
+            } else {
+                present(.update(target))
+            }
         case nil:
             break
         }
@@ -305,11 +327,14 @@ final class PushCoordinator {
 enum PushPresentation: Identifiable, Equatable, Sendable {
     case feedback(deliveryID: String?, prompt: String?)
     case question(PushPayload)
+    case update(ShipKitUpdateTarget)
 
     var id: String {
         switch self {
         case .feedback(let deliveryID, _): return "feedback-\(deliveryID ?? "")"
         case .question(let payload): return "question-\(payload.deliveryID ?? "")"
+        case .update(.feedbackThread(let id)): return "thread-\(id ?? "")"
+        case .update(.featureRequest(let id)): return "request-\(id ?? "")"
         }
     }
 }

@@ -174,3 +174,13 @@
 "checkRequired.title" = "Connettiti per continuare";
 "checkRequired.message" = "L’app deve verificare la disponibilità di aggiornamenti prima di continuare. Connettiti a internet e riprova.";
 "debug.disabled" = "Gli strumenti di debug sono disattivati in questa build.";
+
+/* Custom feedback forms and status updates */
+"feedback.email.footer.updates" = "Usata per risponderti e avvisarti quando cambia lo stato.";
+"feedback.field.optional" = "%@ (facoltativo)";
+"feedback.required.hint" = "Obbligatorio";
+"feedback.error.email" = "Inserisci un indirizzo email valido.";
+"push.updates.title" = "Aggiornamenti di stato";
+"push.updates.footer" = "Notifiche quando cambia lo stato dei feedback o delle richieste che hai inviato o votato. Disattiva per non riceverle più.";
+"statusUpdate.unavailable" = "Questo elemento non è più disponibile.";
+"feedback.email.label" = "E-mail";

@@ -8,6 +8,8 @@ public struct ShipKitSnapshot: Codable, Sendable, Equatable {
     public var flags: [String: ShipKitValue]
     public var version: VersionInfo?
     public var inbox: Inbox?
+    /// The feedback form designed in the dashboard, or `nil` for the standard form.
+    public var feedbackForm: FeedbackForm?
 
     public struct Inbox: Codable, Sendable, Equatable {
         public var unread: Int
@@ -23,7 +25,8 @@ public struct ShipKitSnapshot: Codable, Sendable, Equatable {
         settings: [String: ShipKitValue] = [:],
         flags: [String: ShipKitValue] = [:],
         version: VersionInfo? = nil,
-        unreadCount: Int = 0
+        unreadCount: Int = 0,
+        feedbackForm: FeedbackForm? = nil
     ) {
         self.release = release
         self.ttl = ttl
@@ -31,6 +34,7 @@ public struct ShipKitSnapshot: Codable, Sendable, Equatable {
         self.flags = flags
         self.version = version
         self.inbox = Inbox(unread: unreadCount)
+        self.feedbackForm = feedbackForm
     }
 
     /// Decodes a snapshot from the JSON body served by the backend.
@@ -39,7 +43,7 @@ public struct ShipKitSnapshot: Codable, Sendable, Equatable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case release, ttl, settings, flags, version, inbox
+        case release, ttl, settings, flags, version, inbox, feedbackForm
     }
 
     public init(from decoder: Decoder) throws {
@@ -50,6 +54,7 @@ public struct ShipKitSnapshot: Codable, Sendable, Equatable {
         flags = container.decodeLossy([String: ShipKitValue].self, forKey: .flags) ?? [:]
         version = try container.decodeIfPresent(VersionInfo.self, forKey: .version)
         inbox = container.decodeLossy(Inbox.self, forKey: .inbox)
+        feedbackForm = container.decodeLossy(FeedbackForm.self, forKey: .feedbackForm)
     }
 }
 

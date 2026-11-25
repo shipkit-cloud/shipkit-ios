@@ -152,6 +152,7 @@ struct SettingsView: View {
                 }
 
                 ShipKitPushAsksToggle()
+                ShipKitPushUpdatesToggle()
 
                 Section("About") {
                     LabeledContent("Version", value: appVersion)

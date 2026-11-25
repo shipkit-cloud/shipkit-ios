@@ -9,6 +9,9 @@ private struct DraftAttachment: Identifiable, Equatable {
 
 extension ShipKit {
     /// The feedback form. Present it from your own UI (or use `FeedbackLink` / `FeedbackButton`).
+    ///
+    /// Shows the form designed in the dashboard when one is published, and the standard form
+    /// otherwise (also offline, before the first snapshot arrives).
     public struct FeedbackView: View {
         private enum Phase: Equatable {
             case editing, sending, sent, queued
@@ -16,10 +19,9 @@ extension ShipKit {
 
         @Environment(\.dismiss) private var dismiss
         @ObservedObject private var model = ShipKitModel.shared
+        @State private var form: FeedbackForm
         @State private var category: FeedbackCategory
-        @State private var rating: Int?
-        @State private var message = ""
-        @State private var email: String
+        @State private var values = FeedbackForm.Values()
         @State private var attachments: [DraftAttachment] = []
         @State private var photoItems: [PhotosPickerItem] = []
         @State private var redacting: DraftAttachment?
@@ -27,7 +29,8 @@ extension ShipKit {
         @State private var errorText: String?
         @State private var previousScreen: UIImage?
         @State private var appeared = false
-        @FocusState private var messageFocused: Bool
+        @State private var triedToSend = false
+        @FocusState private var focused: String?
         private let prompt: String?
 
         public init(category: FeedbackCategory = .bug) {
@@ -36,15 +39,33 @@ extension ShipKit {
 
         /// `prompt` is the developer's question from a feedback push, shown above the form.
         init(category: FeedbackCategory, prompt: String?) {
-            _category = State(initialValue: category)
-            _email = State(initialValue: ShipKit.engine?.identity.email ?? "")
+            let form = FeedbackForm.resolve(ShipKit.engine?.snapshot?.feedbackForm, config: ShipKit.config.feedback)
+            _form = State(initialValue: form)
+            let hasCategory = form.visibleFields.contains { $0.kind == .category }
+            _category = State(initialValue: hasCategory ? category : form.defaultCategory)
+            var values = FeedbackForm.Values()
+            values.texts["email"] = ShipKit.engine?.identity.email ?? ""
+            _values = State(initialValue: values)
             self.prompt = prompt
         }
 
         private var config: ShipKitConfig.Feedback { ShipKit.config.feedback }
 
+        private var emailField: FeedbackForm.Field? { form.visibleFields.first { $0.kind == .email } }
+
+        private var emailIsValid: Bool {
+            let text = values.text("email")
+            return emailField == nil || text.isEmpty || FeedbackForm.isValidEmail(text)
+        }
+
+        private var missing: Set<String> { Set(form.missingRequired(values)) }
+
         private var canSend: Bool {
-            phase == .editing && !message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            phase == .editing && missing.isEmpty && emailIsValid && form.hasContent(values)
+        }
+
+        private var maxAttachments: Int {
+            form.visibleFields.first { $0.kind == .screenshots }?.max ?? config.maxAttachments
         }
 
         public var body: some View {
@@ -53,7 +74,7 @@ extension ShipKit {
                 case .sent, .queued:
                     confirmation
                 case .editing, .sending:
-                    form
+                    formView
                 }
             }
             .shipKitDismissesKeyboard()
@@ -67,7 +88,7 @@ extension ShipKit {
             }
         }
 
-        private var form: some View {
+        private var formView: some View {
             Form {
                 if let prompt {
                     Section {
@@ -78,54 +99,8 @@ extension ShipKit {
                     }
                 }
 
-                Section {
-                    Picker(L("feedback.category"), selection: $category) {
-                        ForEach(FeedbackCategory.allCases) { category in
-                            Label(category.title, systemImage: category.symbol).tag(category)
-                        }
-                    }
-                    if config.showsRating {
-                        HStack {
-                            Text(L("feedback.rating"))
-                            Spacer()
-                            StarPicker(rating: $rating)
-                        }
-                    }
-                }
-
-                Section {
-                    ZStack(alignment: .topLeading) {
-                        if message.isEmpty {
-                            Text(placeholder)
-                                .foregroundStyle(.tertiary)
-                                .padding(.top, 8)
-                                .padding(.leading, 4)
-                                .allowsHitTesting(false)
-                        }
-                        TextEditor(text: $message)
-                            .frame(minHeight: 140)
-                            .focused($messageFocused)
-                    }
-                } header: {
-                    Text(L("feedback.message"))
-                }
-
-                if config.attachScreenshot {
-                    attachmentsSection
-                }
-
-                if config.asksForEmail {
-                    Section {
-                        TextField(L("feedback.email.placeholder"), text: $email)
-                            .keyboardType(.emailAddress)
-                            .textContentType(.emailAddress)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
-                    } header: {
-                        Text(L("feedback.email"))
-                    } footer: {
-                        Text(L("feedback.email.footer"))
-                    }
+                ForEach(form.visibleFields) { field in
+                    section(for: field)
                 }
 
                 Section {
@@ -145,7 +120,7 @@ extension ShipKit {
                     if phase == .sending {
                         ProgressView()
                     } else {
-                        Button(L("feedback.send"), action: send)
+                        Button(form.submitLabel ?? L("feedback.send"), action: send)
                             .disabled(!canSend)
                     }
                 }
@@ -168,6 +143,156 @@ extension ShipKit {
             }
         }
 
+        // MARK: - Fields
+
+        /// Built-in labels of the standard form, used when the dashboard left a label empty.
+        private func title(_ field: FeedbackForm.Field) -> String {
+            if let label = field.label, !label.isEmpty { return label }
+            switch field.id {
+            case "category": return L("feedback.category")
+            case "rating": return L("feedback.rating")
+            case "message": return L("feedback.message")
+            // The standard form's label already says "optional"; a custom form decides that itself.
+            case "email": return form.isCustom ? L("feedback.email.label") : L("feedback.email")
+            case "screenshots": return L("feedback.attachments")
+            default: return field.id
+            }
+        }
+
+        /// Marks optional questions on a custom form. The standard form keeps its own wording.
+        private func header(_ field: FeedbackForm.Field) -> String {
+            let text = title(field)
+            guard form.isCustom, !field.required, field.kind != .category, field.kind != .screenshots else { return text }
+            return L("feedback.field.optional", text)
+        }
+
+        @ViewBuilder
+        private func footer(_ field: FeedbackForm.Field, fallback: String? = nil) -> some View {
+            let help = field.help ?? fallback
+            let showMissing = triedToSend && missing.contains(field.id)
+            if help != nil || showMissing {
+                VStack(alignment: .leading, spacing: 4) {
+                    if let help { Text(help) }
+                    if showMissing { Text(L("feedback.required.hint")).foregroundStyle(.red) }
+                }
+            }
+        }
+
+        @ViewBuilder
+        private func section(for field: FeedbackForm.Field) -> some View {
+            switch field.kind {
+            case .category:
+                Section {
+                    Picker(title(field), selection: $category) {
+                        ForEach(FeedbackCategory.allCases) { category in
+                            Label(category.title, systemImage: category.symbol).tag(category)
+                        }
+                    }
+                } footer: {
+                    footer(field)
+                }
+            case .rating:
+                Section {
+                    HStack {
+                        Text(header(field))
+                        Spacer()
+                        StarPicker(rating: ratingBinding(field.id))
+                    }
+                } footer: {
+                    footer(field)
+                }
+            case .longText:
+                Section {
+                    ZStack(alignment: .topLeading) {
+                        if values.text(field.id).isEmpty && (values.texts[field.id] ?? "").isEmpty {
+                            Text(field.placeholder ?? (field.id == "message" ? placeholder : ""))
+                                .foregroundStyle(.tertiary)
+                                .padding(.top, 8)
+                                .padding(.leading, 4)
+                                .allowsHitTesting(false)
+                        }
+                        TextEditor(text: textBinding(field.id, max: field.maxLength ?? 5000))
+                            .frame(minHeight: field.id == "message" ? 140 : 90)
+                            .focused($focused, equals: field.id)
+                    }
+                } header: {
+                    Text(header(field))
+                } footer: {
+                    footer(field)
+                }
+            case .text:
+                Section {
+                    TextField(field.placeholder ?? "", text: textBinding(field.id, max: field.maxLength ?? 500))
+                        .focused($focused, equals: field.id)
+                } header: {
+                    Text(header(field))
+                } footer: {
+                    footer(field)
+                }
+            case .choice:
+                Section {
+                    ForEach(field.options) { option in
+                        let selected = values.choices[field.id] == option.id
+                        Button {
+                            values.choices[field.id] = selected && !field.required ? nil : option.id
+                        } label: {
+                            HStack {
+                                Text(option.label).foregroundStyle(Color.primary)
+                                Spacer()
+                                if selected {
+                                    Image(systemName: "checkmark")
+                                        .font(.body.weight(.semibold))
+                                        .foregroundStyle(ShipKit.theme.primaryColor)
+                                }
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityAddTraits(selected ? .isSelected : [])
+                    }
+                } header: {
+                    Text(header(field))
+                } footer: {
+                    footer(field)
+                }
+            case .email:
+                Section {
+                    TextField(field.placeholder ?? L("feedback.email.placeholder"), text: textBinding(field.id, max: 256))
+                        .keyboardType(.emailAddress)
+                        .textContentType(.emailAddress)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .focused($focused, equals: field.id)
+                } header: {
+                    Text(header(field))
+                } footer: {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(field.help ?? L(field.updates ? "feedback.email.footer.updates" : "feedback.email.footer"))
+                        if !emailIsValid { Text(L("feedback.error.email")).foregroundStyle(.red) }
+                        if triedToSend && missing.contains(field.id) { Text(L("feedback.required.hint")).foregroundStyle(.red) }
+                    }
+                }
+            case .screenshots:
+                attachmentsSection(title: title(field), help: field.help)
+            case .unknown:
+                EmptyView()
+            }
+        }
+
+        private func textBinding(_ id: String, max: Int) -> Binding<String> {
+            Binding(
+                get: { values.texts[id] ?? "" },
+                set: { values.texts[id] = String($0.prefix(max)) }
+            )
+        }
+
+        private func ratingBinding(_ id: String) -> Binding<Int?> {
+            Binding(
+                get: { values.ratings[id] },
+                set: { values.ratings[id] = $0 }
+            )
+        }
+
         private var placeholder: String {
             switch category {
             case .bug: return L("feedback.placeholder.bug")
@@ -177,7 +302,7 @@ extension ShipKit {
             }
         }
 
-        private var attachmentsSection: some View {
+        private func attachmentsSection(title: String, help: String?) -> some View {
             Section {
                 if !attachments.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -189,11 +314,11 @@ extension ShipKit {
                         .padding(.vertical, 6)
                     }
                 }
-                if attachments.count < config.maxAttachments {
+                if attachments.count < maxAttachments {
                     let photoTitle = L("feedback.attach.photo")
                     PhotosPicker(
                         selection: $photoItems,
-                        maxSelectionCount: max(config.maxAttachments - attachments.count, 1),
+                        maxSelectionCount: max(maxAttachments - attachments.count, 1),
                         matching: .images
                     ) {
                         Label(photoTitle, systemImage: "photo.on.rectangle")
@@ -207,10 +332,12 @@ extension ShipKit {
                     }
                 }
             } header: {
-                Text(L("feedback.attachments"))
+                Text(title)
             } footer: {
                 if !attachments.isEmpty {
                     Text(L("feedback.attachments.redactHint"))
+                } else if let help {
+                    Text(help)
                 }
             }
         }
@@ -265,9 +392,10 @@ extension ShipKit {
                 Image(systemName: phase == .queued ? "tray.and.arrow.up" : "checkmark.circle.fill")
                     .font(.system(size: 60))
                     .foregroundStyle(ShipKit.theme.primaryColor)
-                Text(L("feedback.sent.title"))
+                Text(form.thanksTitle ?? L("feedback.sent.title"))
                     .font(.title2.bold())
-                Text(L(phase == .queued ? "feedback.queued.message" : "feedback.sent.message"))
+                    .multilineTextAlignment(.center)
+                Text(phase == .queued ? L("feedback.queued.message") : (form.thanksMessage ?? L("feedback.sent.message")))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                 Spacer()
@@ -278,7 +406,7 @@ extension ShipKit {
         }
 
         private func loadPhotos(_ items: [PhotosPickerItem]) async {
-            for item in items where attachments.count < config.maxAttachments {
+            for item in items where attachments.count < maxAttachments {
                 if let data = try? await item.loadTransferable(type: Data.self), let image = UIImage(data: data) {
                     attachments.append(DraftAttachment(image: image))
                 }
@@ -287,22 +415,28 @@ extension ShipKit {
         }
 
         private func send() {
+            triedToSend = true
             guard canSend, let engine = ShipKit.engine else {
                 if ShipKit.engine == nil { errorText = L("error.generic") }
                 return
             }
-            messageFocused = false
+            focused = nil
             phase = .sending
-            let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
-            let payloads = attachments.compactMap { ImageEncoding.payload(for: $0.image) }
-            let text = message.trimmingCharacters(in: .whitespacesAndNewlines)
-            let category = self.category
-            let rating = config.showsRating ? self.rating : nil
-            let email = config.asksForEmail && !trimmedEmail.isEmpty ? trimmedEmail : nil
+            let has = { (kind: FeedbackForm.Field.Kind, id: String) in form.visibleFields.contains { $0.kind == kind && $0.id == id } }
+            let payloads = has(.screenshots, "screenshots") ? attachments.compactMap { ImageEncoding.payload(for: $0.image) } : []
+            let text = has(.longText, "message") ? values.text("message") : ""
+            let category = form.visibleFields.contains { $0.kind == .category } ? self.category : form.defaultCategory
+            let rating = has(.rating, "rating") ? values.ratings["rating"] : nil
+            let typedEmail = values.text("email")
+            let email = emailField != nil && !typedEmail.isEmpty ? typedEmail : nil
+            // The standard form sends exactly what older SDKs sent, so the message stays required there.
+            let answers = form.isCustom ? form.answers(values) : nil
+            let formRev = form.rev
             Task {
                 do {
                     let result = try await engine.submitFeedback(
-                        category: category, rating: rating, message: text, email: email, images: payloads
+                        category: category, rating: rating, message: text, email: email, images: payloads,
+                        answers: answers, formRev: formRev
                     )
                     switch result {
                     case .sent: phase = .sent

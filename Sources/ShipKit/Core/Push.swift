@@ -80,9 +80,17 @@ struct PushQuestion: Equatable, Sendable {
 struct PushPayload: Equatable, Sendable {
     enum Kind: String, Sendable {
         case message, feedback, question
+        /// A status update about the user's own feedback or a request they sent or voted for.
+        case update
     }
 
     var deliveryID: String?
+    /// Status updates: the notification id, used to record the open.
+    var updateID: String?
+    /// Status updates: `thread` or `request`.
+    var target: String?
+    /// Status updates: id of the thread or request.
+    var ref: String?
     var campaignID: String?
     var kind: Kind?
     var title: String?
@@ -128,6 +136,9 @@ struct PushPayload: Equatable, Sendable {
         hasURL = object.keys.contains("url")
         url = Self.nonEmpty(object["url"] as? String)
         answered = object["answered"] as? Bool ?? false
+        updateID = object["u"] as? String
+        target = object["target"] as? String
+        ref = Self.nonEmpty(object["ref"] as? String)
     }
 
     init(deliveryResponse data: Data) throws {
@@ -146,6 +157,7 @@ struct PushPayload: Equatable, Sendable {
         case .question?: return !(question?.isComplete ?? false)
         case .message?: return !hasURL
         case .feedback?: return !hasFeedbackPrompt
+        case .update?: return false
         }
     }
 
@@ -205,6 +217,8 @@ struct PushTokenBody: Encodable, Sendable {
     var environment: String
     var authorization: String
     var context: RequestContext
+    /// Tells the backend this install handles status update pushes and offers a switch for them.
+    var capabilities: [String] = ["updates"]
 }
 
 struct PushTokenDeleteBody: Encodable, Sendable {
@@ -215,8 +229,13 @@ struct PushAsksBody: Encodable, Sendable {
     var asks: Bool
 }
 
+struct PushUpdatesBody: Encodable, Sendable {
+    var updates: Bool
+}
+
 struct PushAsksResponse: Decodable, Sendable {
     var asks: Bool?
+    var updates: Bool?
     var registered: Bool?
 }
 

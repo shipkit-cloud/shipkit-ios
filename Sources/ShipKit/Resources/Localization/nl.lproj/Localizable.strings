@@ -174,3 +174,13 @@
 "checkRequired.title" = "Maak verbinding om door te gaan";
 "checkRequired.message" = "De app moet op updates controleren voordat je verder kunt. Maak verbinding met internet en probeer het opnieuw.";
 "debug.disabled" = "Debugtools zijn uitgeschakeld in deze build.";
+
+/* Custom feedback forms and status updates */
+"feedback.email.footer.updates" = "Gebruikt om je te antwoorden en je te laten weten wanneer de status verandert.";
+"feedback.field.optional" = "%@ (optioneel)";
+"feedback.required.hint" = "Verplicht";
+"feedback.error.email" = "Voer een geldig e-mailadres in.";
+"push.updates.title" = "Statusupdates";
+"push.updates.footer" = "Meldingen wanneer de status verandert van feedback of functieverzoeken die je stuurde of waarop je stemde. Zet dit uit om ze niet meer te ontvangen.";
+"statusUpdate.unavailable" = "Dit item is niet meer beschikbaar.";
+"feedback.email.label" = "E-mail";

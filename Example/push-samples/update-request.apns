@@ -1,0 +1,17 @@
+{
+  "Simulator Target Bundle": "dev.shipkit.demo",
+  "aps": {
+    "alert": {
+      "title": "Feature request",
+      "body": "“Dark mode” shipped in version 2.2.0."
+    },
+    "sound": "default",
+    "thread-id": "shipkit-updates"
+  },
+  "shipkit": {
+    "kind": "update",
+    "u": "upn_sample_request",
+    "target": "request",
+    "ref": null
+  }
+}

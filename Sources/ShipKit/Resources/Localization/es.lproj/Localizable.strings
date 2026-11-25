@@ -174,3 +174,13 @@
 "checkRequired.title" = "Conéctate para continuar";
 "checkRequired.message" = "La app necesita buscar actualizaciones antes de continuar. Conéctate a internet e inténtalo de nuevo.";
 "debug.disabled" = "Las herramientas de depuración están desactivadas en esta compilación.";
+
+/* Custom feedback forms and status updates */
+"feedback.email.footer.updates" = "Se usa para responderte y avisarte cuando cambie el estado.";
+"feedback.field.optional" = "%@ (opcional)";
+"feedback.required.hint" = "Obligatorio";
+"feedback.error.email" = "Introduce un correo electrónico válido.";
+"push.updates.title" = "Actualizaciones de estado";
+"push.updates.footer" = "Avisos cuando cambia el estado de tus comentarios o de las solicitudes que enviaste o votaste. Desactívalo para dejar de recibirlos.";
+"statusUpdate.unavailable" = "Este elemento ya no está disponible.";
+"feedback.email.label" = "Correo electrónico";

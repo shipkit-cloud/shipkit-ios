@@ -1,0 +1,17 @@
+{
+  "Simulator Target Bundle": "dev.shipkit.demo",
+  "aps": {
+    "alert": {
+      "title": "Your feedback",
+      "body": "Your feedback has been resolved. Thank you!"
+    },
+    "sound": "default",
+    "thread-id": "shipkit-updates"
+  },
+  "shipkit": {
+    "kind": "update",
+    "u": "upn_sample_thread",
+    "target": "thread",
+    "ref": null
+  }
+}

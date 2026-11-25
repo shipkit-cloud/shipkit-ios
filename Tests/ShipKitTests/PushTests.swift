@@ -9,6 +9,22 @@ final class PushPayloadTests: XCTestCase {
         return ["aps": aps, "shipkit": shipkit]
     }
 
+    func testStatusUpdatePayload() throws {
+        let payload = try XCTUnwrap(PushPayload(userInfo: userInfo(
+            ["kind": "update", "u": "upn_1", "target": "request", "ref": "req_9"],
+            alert: ["title": "Feature request", "body": "“Dark mode” shipped in version 2.2.0."]
+        )))
+        XCTAssertEqual(payload.kind, .update)
+        XCTAssertEqual(payload.updateID, "upn_1")
+        XCTAssertEqual(payload.target, "request")
+        XCTAssertEqual(payload.ref, "req_9")
+        XCTAssertNil(payload.deliveryID, "no campaign delivery to record or fetch")
+        XCTAssertFalse(payload.needsFetch)
+
+        let noRef = try XCTUnwrap(PushPayload(userInfo: userInfo(["kind": "update", "u": "upn_2", "target": "thread", "ref": NSNull()])))
+        XCTAssertNil(noRef.ref)
+    }
+
     func testNonShipKitNotificationIsIgnored() {
         XCTAssertNil(PushPayload(userInfo: ["aps": ["alert": "Hi"]]))
         XCTAssertNil(PushPayload(userInfo: ["shipkit": "not an object"]))
@@ -259,6 +275,7 @@ final class PushEngineTests: XCTestCase {
         XCTAssertEqual(body["token"] as? String, "ab01")
         XCTAssertEqual(body["environment"] as? String, "sandbox")
         XCTAssertEqual(body["authorization"] as? String, "authorized")
+        XCTAssertEqual(body["capabilities"] as? [String], ["updates"])
         let context = try XCTUnwrap(body["context"] as? [String: Any])
         XCTAssertEqual(context["stableId"] as? String, engine.stableID)
         XCTAssertEqual(context["platform"] as? String, "ios")
@@ -332,6 +349,35 @@ final class PushEngineTests: XCTestCase {
         try await engine.refreshPushPreferences()
         XCTAssertEqual(MockURLProtocol.requests.last?.method, "GET")
         XCTAssertTrue(engine.pushAsksEnabled)
+    }
+
+    func testStatusUpdatePreference() async throws {
+        MockURLProtocol.setHandler { request in
+            if request.method == "PUT" { return MockResponse(status: 200, body: Data("{\"asks\": true, \"updates\": false}".utf8)) }
+            return MockResponse(status: 200, body: Data("{\"asks\": true, \"updates\": true, \"registered\": true}".utf8))
+        }
+        let preferences = TestEnv.preferences()
+        let engine = TestEnv.makeEngine(directory: TestEnv.directory(), preferences: preferences)
+        XCTAssertTrue(engine.pushUpdatesEnabled, "defaults to on")
+        try await engine.setPushUpdates(false)
+        let put = try XCTUnwrap(MockURLProtocol.requests.last)
+        XCTAssertEqual(put.url.path, "/v1/push/preferences")
+        XCTAssertEqual(try json(put) as NSDictionary, ["updates": false] as NSDictionary, "the campaign switch is left alone")
+        XCTAssertFalse(engine.pushUpdatesEnabled)
+        XCTAssertTrue(engine.pushAsksEnabled)
+        XCTAssertFalse(TestEnv.makeEngine(directory: TestEnv.directory(), preferences: preferences).pushUpdatesEnabled, "cached across launches")
+
+        try await engine.refreshPushPreferences()
+        XCTAssertTrue(engine.pushUpdatesEnabled)
+    }
+
+    func testStatusUpdateOpened() async throws {
+        MockURLProtocol.setHandler { _ in MockResponse(status: 204) }
+        let engine = TestEnv.makeEngine(directory: TestEnv.directory())
+        await engine.markUpdateOpened("upn_1")
+        let request = try XCTUnwrap(MockURLProtocol.requests.last)
+        XCTAssertEqual(request.method, "POST")
+        XCTAssertEqual(request.url.path, "/v1/updates/upn_1/opened")
     }
 
     func testOpenedBody() async throws {

@@ -174,3 +174,13 @@
 "checkRequired.title" = "Połącz się, aby kontynuować";
 "checkRequired.message" = "Aplikacja musi sprawdzić dostępność aktualizacji, zanim przejdziesz dalej. Połącz się z internetem i spróbuj ponownie.";
 "debug.disabled" = "Narzędzia debugowania są wyłączone w tej kompilacji.";
+
+/* Custom feedback forms and status updates */
+"feedback.email.footer.updates" = "Używany do odpowiedzi i powiadomienia Cię o zmianie statusu.";
+"feedback.field.optional" = "%@ (opcjonalnie)";
+"feedback.required.hint" = "Wymagane";
+"feedback.error.email" = "Wpisz poprawny adres e-mail.";
+"push.updates.title" = "Zmiany statusu";
+"push.updates.footer" = "Powiadomienia o zmianie statusu Twoich opinii oraz próśb o funkcje, które zgłosiłeś lub na które głosowałeś. Wyłącz, aby przestać je otrzymywać.";
+"statusUpdate.unavailable" = "Ten element nie jest już dostępny.";
+"feedback.email.label" = "E-mail";

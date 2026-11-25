@@ -174,3 +174,13 @@
 "checkRequired.title" = "Verbindung erforderlich";
 "checkRequired.message" = "Die App muss nach Updates suchen, bevor es weitergeht. Stelle eine Internetverbindung her und versuche es erneut.";
 "debug.disabled" = "Die Debug-Werkzeuge sind in diesem Build deaktiviert.";
+
+/* Custom feedback forms and status updates */
+"feedback.email.footer.updates" = "Wird verwendet, um dir zu antworten und dich über Statusänderungen zu informieren.";
+"feedback.field.optional" = "%@ (optional)";
+"feedback.required.hint" = "Pflichtfeld";
+"feedback.error.email" = "Gib eine gültige E-Mail-Adresse ein.";
+"push.updates.title" = "Statusmeldungen";
+"push.updates.footer" = "Mitteilungen, wenn sich der Status deines Feedbacks oder eines Funktionswunschs ändert, den du eingereicht oder unterstützt hast. Schalte dies aus, um sie nicht mehr zu erhalten.";
+"statusUpdate.unavailable" = "Dieser Eintrag ist nicht mehr verfügbar.";
+"feedback.email.label" = "E-Mail";

@@ -10,6 +10,7 @@ final class ShipKitModel: ObservableObject {
     @Published private(set) var unreadCount = 0
     @Published private(set) var configRevision = 0
     @Published private(set) var pushAsksEnabled = true
+    @Published private(set) var pushUpdatesEnabled = true
     /// A push presentation waiting for `.shipKitGate()` (or the UIKit fallback) to show it.
     @Published var pendingPush: PushPresentation?
     /// Number of `.shipKitGate()` modifiers currently on screen.
@@ -26,6 +27,8 @@ final class ShipKitModel: ObservableObject {
         if unread != unreadCount { unreadCount = unread }
         let asks = engine?.pushAsksEnabled ?? true
         if asks != pushAsksEnabled { pushAsksEnabled = asks }
+        let updates = engine?.pushUpdatesEnabled ?? true
+        if updates != pushUpdatesEnabled { pushUpdatesEnabled = updates }
         revision &+= 1
     }
 
@@ -52,11 +55,14 @@ public struct ShipKitConfig: Sendable {
     public struct Feedback: Sendable {
         /// Opens the feedback form when the device is shaken. Requires `.shipKitGate()` on the root view.
         public var shakeToReport = false
-        /// Allows attaching screenshots (photo library and current screen).
+        /// Allows attaching screenshots (photo library and current screen). When off, a custom form's
+        /// screenshot field is hidden too.
         public var attachScreenshot = true
-        /// Shows the optional star rating in the feedback form.
+        /// Shows the optional star rating in the standard feedback form. A form designed in the
+        /// dashboard decides this itself.
         public var showsRating = true
-        /// Shows the optional email field in the feedback form.
+        /// Shows the optional email field in the standard feedback form. A form designed in the
+        /// dashboard decides this itself.
         public var asksForEmail = true
         public var maxAttachments = 3
 

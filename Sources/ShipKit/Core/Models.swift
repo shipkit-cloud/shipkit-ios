@@ -181,6 +181,11 @@ struct FeedbackSubmission: Codable, Sendable {
     var email: String?
     var attachments: [String]
     var context: RequestContext
+    /// Answers to the custom form's own questions. Absent for the standard form, which keeps the
+    /// message required on the server. Queued items from older SDKs decode with `nil`.
+    var answers: [FeedbackAnswer]? = nil
+    /// Revision of the custom form the answers belong to.
+    var formRev: String? = nil
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -190,6 +195,8 @@ struct FeedbackSubmission: Codable, Sendable {
         try container.encode(email, forKey: .email)
         try container.encode(attachments, forKey: .attachments)
         try container.encode(context, forKey: .context)
+        try container.encodeIfPresent(answers, forKey: .answers)
+        try container.encodeIfPresent(formRev, forKey: .formRev)
     }
 }
 

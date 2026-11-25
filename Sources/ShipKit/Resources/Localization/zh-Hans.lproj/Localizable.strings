@@ -174,3 +174,13 @@
 "checkRequired.title" = "连接网络以继续";
 "checkRequired.message" = "继续之前，App 需要检查更新。请连接互联网后重试。";
 "debug.disabled" = "此构建版本已停用调试工具。";
+
+/* Custom feedback forms and status updates */
+"feedback.email.footer.updates" = "用于回复你，并在状态变化时通知你。";
+"feedback.field.optional" = "%@（可选）";
+"feedback.required.hint" = "必填";
+"feedback.error.email" = "请输入有效的邮箱地址。";
+"push.updates.title" = "状态更新";
+"push.updates.footer" = "当你提交的反馈或你提交、投票的功能请求状态变化时通知你。关闭后将不再收到。";
+"statusUpdate.unavailable" = "此内容已不可用。";
+"feedback.email.label" = "电子邮件";

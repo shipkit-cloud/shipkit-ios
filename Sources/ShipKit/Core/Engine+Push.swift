@@ -3,22 +3,26 @@ import Foundation
 struct PushState: Sendable {
     var token: String?
     var asks: Bool
+    var updates: Bool
     /// token|authorization|environment of the last successful registration this session.
     var lastSent: String?
 
     init(preferences: Preferences, persistent: Bool) {
         guard persistent else {
             asks = true
+            updates = true
             return
         }
         token = preferences.string(.pushToken)
         asks = preferences.defaults.object(forKey: Preferences.Key.pushAsks.rawValue) as? Bool ?? true
+        updates = preferences.defaults.object(forKey: Preferences.Key.pushUpdates.rawValue) as? Bool ?? true
     }
 }
 
 extension Engine {
     var pushToken: String? { pushState.withLock { $0.token } }
     var pushAsksEnabled: Bool { pushState.withLock { $0.asks } }
+    var pushUpdatesEnabled: Bool { pushState.withLock { $0.updates } }
 
     /// Stores the token and reports whether it differs from the one already known.
     @discardableResult
@@ -42,6 +46,20 @@ extension Engine {
         if changed { onChange() }
     }
 
+    private func updateUpdates(_ updates: Bool) {
+        let changed = pushState.withLock { state -> Bool in
+            defer { state.updates = updates }
+            return state.updates != updates
+        }
+        if configuration.persistent { preferences.set(updates, for: .pushUpdates) }
+        if changed { onChange() }
+    }
+
+    private func apply(_ response: PushAsksResponse) {
+        if let asks = response.asks { updateAsks(asks) }
+        if let updates = response.updates { updateUpdates(updates) }
+    }
+
     /// Registers the stored token. Skips the request when the same token, status and environment
     /// were already sent this session.
     func postPushToken(authorization: String, environment: ShipKitPushEnvironment) async {
@@ -57,7 +75,7 @@ extension Engine {
         do {
             let response: PushAsksResponse = try await client().json("POST", "v1/push/token", body: body)
             pushState.withLock { $0.lastSent = key }
-            if let asks = response.asks { updateAsks(asks) }
+            apply(response)
         } catch {
             ShipKitLog.error("Push token registration failed: \(error.localizedDescription)")
         }
@@ -81,9 +99,22 @@ extension Engine {
         updateAsks(response.asks ?? enabled)
     }
 
+    func setPushUpdates(_ enabled: Bool) async throws {
+        let response: PushAsksResponse = try await client().json("PUT", "v1/push/preferences", body: PushUpdatesBody(updates: enabled))
+        updateUpdates(response.updates ?? enabled)
+    }
+
     func refreshPushPreferences() async throws {
         let response: PushAsksResponse = try await client().json("GET", "v1/push/preferences")
-        if let asks = response.asks { updateAsks(asks) }
+        apply(response)
+    }
+
+    func markUpdateOpened(_ id: String) async {
+        do {
+            try await client().perform("POST", "v1/updates/\(id)/opened")
+        } catch {
+            ShipKitLog.error("Could not record status update open: \(error.localizedDescription)")
+        }
     }
 
     func pushDelivery(_ id: String) async throws -> PushPayload {

@@ -492,7 +492,9 @@ final class Engine: Sendable {
         rating: Int?,
         message: String,
         email: String?,
-        images: [ImagePayload]
+        images: [ImagePayload],
+        answers: [FeedbackAnswer]? = nil,
+        formRev: String? = nil
     ) async throws -> FeedbackSubmitResult {
         var submission = FeedbackSubmission(
             category: category,
@@ -500,7 +502,9 @@ final class Engine: Sendable {
             message: message,
             email: email,
             attachments: [],
-            context: makeContext()
+            context: makeContext(),
+            answers: answers,
+            formRev: formRev
         )
         var remaining = images
         do {

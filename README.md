@@ -18,7 +18,7 @@ https://github.com/shipkit-cloud/shipkit-ios.git
 In Xcode: **File > Add Package Dependencies…**, paste the URL, and add the `ShipKit` library to your app target. In `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/shipkit-cloud/shipkit-ios.git", from: "1.2.0")
+.package(url: "https://github.com/shipkit-cloud/shipkit-ios.git", from: "1.3.0")
 // ...
 .product(name: "ShipKit", package: "shipkit-ios")
 ```
@@ -159,7 +159,9 @@ ShipKit.RequestBoardView()
 ShipKit.RatingRow(feature: "new_editor")   // static thumbs up / down, shows the existing score
 ```
 
-The feedback form has a category (bug, idea, question, praise), an optional 1–5 star rating, the message, an optional email and screenshots. Screenshots come from the photo library or from the screen the user came from. Users can black out regions before sending. The form lists exactly which device context is attached. Feedback sent while offline is saved to disk and sent on the next successful refresh.
+The standard feedback form has a category (bug, idea, question, praise), an optional 1–5 star rating, the message, an optional email and screenshots. Screenshots come from the photo library or from the screen the user came from. Users can black out regions before sending. The form lists exactly which device context is attached. Feedback sent while offline is saved to disk and sent on the next successful refresh.
+
+You can also design the form in the dashboard (*Feedback inbox → Form*): pick and order the fields (star ratings, short and long text, single choice, email, category, screenshots), mark each as required or optional, and write labels in any language. After you publish, `FeedbackView` and everything that opens it show that form, with no code change. Without a published form, offline before the first snapshot, or on SDK versions before 1.3, the standard form is shown. Answers appear on the thread in the dashboard.
 
 The inbox lists threads with status, "Fixed in" badges and unread counts, and opens a chat-style conversation with replies. The request board has tabs for Open, Planned, In Progress and Done, plus voting, comments and a form for new requests. New requests are reviewed before other users see them.
 
@@ -174,8 +176,8 @@ ShipKit.config.feedback.shakeToReport = true   // requires .shipKitGate() on the
 ```swift
 ShipKit.theme.primaryColor = .indigo
 ShipKit.theme.cornerRadius = 16
-ShipKit.config.feedback.attachScreenshot = false
-ShipKit.config.feedback.showsRating = false
+ShipKit.config.feedback.attachScreenshot = false   // also hides a dashboard form's screenshot field
+ShipKit.config.feedback.showsRating = false        // standard form only; a dashboard form decides itself
 ShipKit.config.strings["feedback.title"] = "Contact us"   // any key from Localizable.strings
 ```
 
@@ -196,6 +198,7 @@ ShipKit.configure(with: "skc_prod_...") { o in
     o.push.environment = .sandbox              // nil (default) = automatic
     o.push.foregroundPresentation = [.banner, .sound, .list]
     o.push.openURL = { url in router.open(url) } // message links; default is UIApplication.shared.open
+    o.push.openUpdate = { target in router.show(target) } // status updates; default presents a sheet
 }
 ```
 
@@ -254,6 +257,20 @@ ShipKit.pushAsksEnabled                 // cached, updated on each token registr
 try await ShipKit.setPushAsks(false)
 ```
 
+If you turn on status updates in the dashboard (*Settings → User notifications*), people get a push when their feedback changes status, is fixed in a version, or a feature request they sent or voted for moves on. Give them a switch for those too:
+
+```swift
+Form {
+    ShipKitPushAsksToggle()
+    ShipKitPushUpdatesToggle()   // "Status updates"
+}
+
+ShipKit.pushUpdatesEnabled
+try await ShipKit.setPushUpdates(false)
+```
+
+Status emails need no SDK code: they go only to addresses typed into a dashboard form whose email field says it's used for updates, and every email has an unsubscribe link.
+
 ### 5. Handling
 
 **No notification delegate of your own:** assign the ready-made one in `didFinishLaunching` (as above). It shows ShipKit pushes as banners while the app is open and handles taps and action buttons. Other notifications keep the system default.
@@ -291,6 +308,7 @@ What a ShipKit push does:
 | question, 1–5 | Opens the question sheet with stars. | ★☆☆☆☆ … ★★★★★ |
 | question, choice | Opens the question sheet with the options. | — |
 | question, text | Opens the question sheet with a text field. | Reply (inline text) |
+| status update | Records the open and shows the conversation or feature request (through `o.push.openUpdate` if set). | — |
 
 Action buttons send the answer in the background without opening any UI. Answers that fail because the device is offline are retried on the next launch. Dismissing a notification is recorded as well. The question sheet offers an optional comment for yes/no, scale and choice questions. If the push arrived without the full question (payload size limit), the sheet fetches it from the server.
 
@@ -379,6 +397,7 @@ xcodebuild test -scheme ShipKit -destination 'platform=iOS Simulator,name=iPhone
 - Snapshots are cached in `Application Support/ShipKit/`, which is excluded from backups.
 - Telemetry can be turned off with `o.telemetry = .off`.
 - The APNs device token is only sent if your app calls `setPushToken`, together with the notification authorization status. Answers to push questions are sent with the request context, like feedback.
+- Answers to questions you add to the feedback form are sent with the feedback. Declare whatever they collect in your privacy label. An email typed into a form whose email field is marked for status updates is used to send those updates.
 
 ## Demo app
 

@@ -87,6 +87,14 @@ public struct ShipKitOptions: Sendable {
     public init() {}
 }
 
+/// What a status update push is about.
+public enum ShipKitUpdateTarget: Sendable, Equatable {
+    /// A feedback conversation. `nil` when the push named none; show the inbox.
+    case feedbackThread(id: String?)
+    /// A feature request. `nil` when the push named none; show the request board.
+    case featureRequest(id: String?)
+}
+
 public struct ShipKitPushOptions: Sendable {
     /// APNs environment sent with the device token. `nil` picks `sandbox` in debug builds and
     /// `production` otherwise; set it explicitly for release builds signed with development provisioning.
@@ -96,6 +104,9 @@ public struct ShipKitPushOptions: Sendable {
     /// Opens the `url` of a tapped message push. Defaults to `UIApplication.shared.open(_:)`;
     /// set it to route deep links through your own navigation.
     public var openURL: (@MainActor @Sendable (URL) -> Void)?
+    /// Opens what a tapped status update push is about. Defaults to presenting the feedback
+    /// conversation or the feature request in a sheet; set it to show them in your own navigation.
+    public var openUpdate: (@MainActor @Sendable (ShipKitUpdateTarget) -> Void)?
 
     public init() {}
 

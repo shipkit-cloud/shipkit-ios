@@ -1,0 +1,28 @@
+{
+  "release": 9,
+  "ttl": 900,
+  "settings": {},
+  "flags": {},
+  "version": { "status": "ok", "current": "2.0.0", "personal": [] },
+  "inbox": { "unread": 0 },
+  "feedbackForm": {
+    "version": 1,
+    "rev": "c91db483",
+    "defaultCategory": "idea",
+    "fields": [
+      { "id": "rating", "type": "rating", "label": "Wie war der Checkout?", "required": true },
+      { "id": "f_order1", "type": "text", "label": "Bestellnummer", "required": false, "maxLength": 20 },
+      { "id": "f_area1", "type": "choice", "label": "Bereich", "required": false,
+        "options": [{ "id": "o_1", "label": "Zahlung" }, { "id": "o_2", "label": "Lieferung" }, { "label": "broken" }] },
+      { "id": "f_date1", "type": "date", "label": "From a newer ShipKit", "required": true },
+      { "type": "text", "label": "no id" },
+      "not a field",
+      { "id": "message", "type": "longtext", "label": null, "required": false, "maxLength": 5000 },
+      { "id": "email", "type": "email", "label": null, "help": null, "required": false, "updates": true },
+      { "id": "screenshots", "type": "screenshots", "label": null, "required": false, "max": 2 }
+    ],
+    "submitLabel": "Senden",
+    "thanksTitle": "Danke!",
+    "thanksMessage": null
+  }
+}

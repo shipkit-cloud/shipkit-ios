@@ -174,3 +174,13 @@
 "checkRequired.title" = "接続して続ける";
 "checkRequired.message" = "続ける前にアップデートの確認が必要です。インターネットに接続して、もう一度お試しください。";
 "debug.disabled" = "このビルドではデバッグツールは無効です。";
+
+/* Custom feedback forms and status updates */
+"feedback.email.footer.updates" = "ご返信とステータス変更のお知らせに使用されます。";
+"feedback.field.optional" = "%@（任意）";
+"feedback.required.hint" = "必須";
+"feedback.error.email" = "有効なメールアドレスを入力してください。";
+"push.updates.title" = "ステータスのお知らせ";
+"push.updates.footer" = "送信したフィードバックや、送信・投票した機能リクエストのステータスが変わったときに通知します。受け取らない場合はオフにしてください。";
+"statusUpdate.unavailable" = "この項目は利用できなくなりました。";
+"feedback.email.label" = "メールアドレス";

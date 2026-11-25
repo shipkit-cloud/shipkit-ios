@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// What a tapped push presents: the feedback form or the question sheet.
+/// What a tapped push presents: the feedback form, the question sheet, or what a status update is about.
 struct PushPresentationView: View {
     let presentation: PushPresentation
 
@@ -10,7 +10,100 @@ struct PushPresentationView: View {
             FeedbackSheet(category: .idea, prompt: prompt)
         case .question(let payload):
             PushQuestionSheet(payload: payload)
+        case .update(let target):
+            UpdateSheet(target: target)
         }
+    }
+}
+
+/// Shows the feedback conversation or feature request a status update push is about.
+struct UpdateSheet: View {
+    let target: ShipKitUpdateTarget
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            content
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(L("common.done")) { dismiss() }
+                    }
+                }
+        }
+        .shipKitTint()
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch target {
+        case .feedbackThread(let id?):
+            UpdateThreadLoader(threadID: id)
+        case .feedbackThread(nil):
+            ShipKit.FeedbackInboxView()
+        case .featureRequest(let id?):
+            UpdateRequestLoader(requestID: id)
+        case .featureRequest(nil):
+            ShipKit.RequestBoardView()
+        }
+    }
+}
+
+private struct UpdateThreadLoader: View {
+    let threadID: String
+    @State private var thread: FeedbackThread?
+    @State private var failed: String?
+    @State private var missing = false
+
+    var body: some View {
+        Group {
+            if let thread {
+                FeedbackThreadView(thread: thread) { self.thread = $0 }
+            } else if missing {
+                EmptyStateView(systemImage: "bubble.left.and.exclamationmark.bubble.right", title: L("statusUpdate.unavailable"), message: nil)
+            } else if let failed {
+                ErrorBanner(message: failed) { Task { await load() } }
+            } else {
+                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .navigationTitle(L("inbox.title"))
+        .navigationBarTitleDisplayMode(.inline)
+        .task { await load() }
+    }
+
+    private func load() async {
+        guard let engine = ShipKit.engine else {
+            missing = true
+            return
+        }
+        failed = nil
+        do {
+            thread = try await engine.thread(threadID).0
+        } catch ShipKitError.server(let status, _, _) where status == 404 {
+            missing = true
+        } catch {
+            failed = errorMessage(error)
+        }
+    }
+}
+
+private struct UpdateRequestLoader: View {
+    let requestID: String
+    @StateObject private var store = RequestBoardStore()
+
+    var body: some View {
+        Group {
+            if store.request(requestID) != nil {
+                RequestDetailView(store: store, requestID: requestID)
+            } else if store.loaded {
+                EmptyStateView(systemImage: "lightbulb", title: L("statusUpdate.unavailable"), message: nil)
+            } else if let errorText = store.errorText {
+                ErrorBanner(message: errorText) { Task { await store.load() } }
+            } else {
+                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .task { await store.load() }
     }
 }
 
@@ -346,6 +439,64 @@ public struct ShipKitPushAsksToggle: View {
         Task {
             do {
                 try await ShipKit.setPushAsks(enabled)
+                errorText = nil
+            } catch {
+                errorText = errorMessage(error)
+            }
+            model.reload()
+            pending = nil
+            saving = false
+        }
+    }
+}
+
+/// A settings row that lets people turn off status updates about feedback and feature requests
+/// they sent or voted for. Place it inside a `Form` or `List`.
+public struct ShipKitPushUpdatesToggle: View {
+    private let title: String?
+    private let footer: String?
+    @ObservedObject private var model = ShipKitModel.shared
+    @State private var pending: Bool?
+    @State private var saving = false
+    @State private var errorText: String?
+
+    public init(_ title: String? = nil, footer: String? = nil) {
+        self.title = title
+        self.footer = footer
+    }
+
+    private var isOn: Binding<Bool> {
+        Binding(
+            get: { pending ?? model.pushUpdatesEnabled },
+            set: { update($0) }
+        )
+    }
+
+    public var body: some View {
+        Section {
+            Toggle(title ?? L("push.updates.title"), isOn: isOn)
+                .disabled(saving)
+        } footer: {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(footer ?? L("push.updates.footer"))
+                if let errorText {
+                    Text(errorText).foregroundStyle(.red)
+                }
+            }
+        }
+        .shipKitTint()
+        .task {
+            try? await ShipKit.engine?.refreshPushPreferences()
+            model.reload()
+        }
+    }
+
+    private func update(_ enabled: Bool) {
+        pending = enabled
+        saving = true
+        Task {
+            do {
+                try await ShipKit.setPushUpdates(enabled)
                 errorText = nil
             } catch {
                 errorText = errorMessage(error)

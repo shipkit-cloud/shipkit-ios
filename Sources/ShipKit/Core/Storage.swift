@@ -13,6 +13,7 @@ struct Preferences: @unchecked Sendable {
         case lastPingDay = "ShipKit.lastPingDay"
         case pushToken = "ShipKit.pushToken"
         case pushAsks = "ShipKit.pushAsks"
+        case pushUpdates = "ShipKit.pushUpdates"
         case pushPendingAnswers = "ShipKit.pushPendingAnswers"
         case firstLaunch = "ShipKit.firstLaunch"
     }
