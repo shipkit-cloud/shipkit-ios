@@ -1,3 +1,4 @@
+#if !os(tvOS)
 import SwiftUI
 
 /// What a tapped push presents: the feedback form, the question sheet, or what a status update is about.
@@ -67,7 +68,7 @@ private struct UpdateThreadLoader: View {
             }
         }
         .navigationTitle(L("inbox.title"))
-        .navigationBarTitleDisplayMode(.inline)
+        .skInlineTitle()
         .task { await load() }
     }
 
@@ -124,10 +125,13 @@ struct PushQuestionSheet: View {
     @State private var errorText: String?
     @State private var loadError: String?
     @FocusState private var textFocused: Bool
+    /// Sends the answer somewhere else than the push delivery (an in-app ask).
+    private let submit: (@MainActor (PushAnswer) async throws -> Void)?
 
-    init(payload: PushPayload) {
+    init(payload: PushPayload, submit: (@MainActor (PushAnswer) async throws -> Void)? = nil) {
         _payload = State(initialValue: payload)
         _phase = State(initialValue: payload.question?.isComplete == true ? .answering : .loading)
+        self.submit = submit
     }
 
     private var type: PushQuestion.Kind? { payload.question?.type }
@@ -154,7 +158,7 @@ struct PushQuestionSheet: View {
             content
                 .shipKitDismissesKeyboard()
                 .navigationTitle(L("question.title"))
-                .navigationBarTitleDisplayMode(.inline)
+                .skInlineTitle()
                 .toolbar {
                     if phase != .sent {
                         ToolbarItem(placement: .cancellationAction) {
@@ -372,7 +376,7 @@ struct PushQuestionSheet: View {
     }
 
     private func send() {
-        guard let answer, let id = payload.deliveryID, let engine = ShipKit.engine else {
+        guard let answer, let engine = ShipKit.engine, submit != nil || payload.deliveryID != nil else {
             errorText = L("error.generic")
             return
         }
@@ -380,7 +384,11 @@ struct PushQuestionSheet: View {
         phase = .sending
         Task {
             do {
-                try await engine.answerPush(id, answer: answer)
+                if let submit {
+                    try await submit(answer)
+                } else if let id = payload.deliveryID {
+                    try await engine.answerPush(id, answer: answer)
+                }
                 phase = .sent
             } catch {
                 phase = .answering
@@ -507,3 +515,4 @@ public struct ShipKitPushUpdatesToggle: View {
         }
     }
 }
+#endif

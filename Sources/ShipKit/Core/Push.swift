@@ -257,6 +257,9 @@ struct PendingPushAnswer: Codable, Sendable, Equatable {
 
 // MARK: - Categories
 
+// tvOS has no notification actions.
+#if !os(tvOS)
+
 enum PushCategories {
     /// Adds ShipKit's categories to the app's own. Categories with a ShipKit identifier are
     /// replaced (so titles follow the current language), everything else is kept.
@@ -324,3 +327,4 @@ enum PushCategories {
         String(repeating: "★", count: value) + String(repeating: "☆", count: 5 - value)
     }
 }
+#endif

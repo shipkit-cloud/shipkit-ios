@@ -193,7 +193,9 @@ final class PushLogicTests: XCTestCase {
     func testAuthorizationStrings() {
         XCTAssertEqual(PushAuthorization.string(.authorized), "authorized")
         XCTAssertEqual(PushAuthorization.string(.provisional), "provisional")
+        #if os(iOS)
         XCTAssertEqual(PushAuthorization.string(.ephemeral), "ephemeral")
+        #endif
         XCTAssertEqual(PushAuthorization.string(.denied), "denied")
         XCTAssertEqual(PushAuthorization.string(.notDetermined), "notDetermined")
     }
@@ -278,7 +280,7 @@ final class PushEngineTests: XCTestCase {
         XCTAssertEqual(body["capabilities"] as? [String], ["updates"])
         let context = try XCTUnwrap(body["context"] as? [String: Any])
         XCTAssertEqual(context["stableId"] as? String, engine.stableID)
-        XCTAssertEqual(context["platform"] as? String, "ios")
+        XCTAssertEqual(context["platform"] as? String, expectedPlatform)
 
         XCTAssertFalse(engine.pushAsksEnabled, "updated from the token response")
         let reloaded = TestEnv.makeEngine(directory: TestEnv.directory(), preferences: preferences)

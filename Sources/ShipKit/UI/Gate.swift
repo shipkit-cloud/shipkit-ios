@@ -7,7 +7,8 @@ extension View {
     /// - `checkRequired` (only with `versionCheckMaxAge`) covers the app until a check succeeds.
     /// - `recommended` shows a dismissible reminder, following the server's reminder cadence.
     /// - What's New is shown once on the version it describes.
-    /// - Hosts the shake-to-report form when `ShipKit.config.feedback.shakeToReport` is enabled.
+    /// - Hosts the shake-to-report form when `ShipKit.config.feedback.shakeToReport` is enabled (iOS),
+    ///   and the form opened by `ShipKitFeedbackCommands` (macOS).
     public func shipKitGate() -> some View {
         modifier(ShipKitGateModifier())
     }
@@ -16,13 +17,17 @@ extension View {
 private enum GateSheet: Identifiable {
     case reminder(VersionInfo)
     case whatsNew(VersionInfo.WhatsNew)
+    #if !os(tvOS)
     case feedback
     case push(PushPresentation)
+    #endif
 
     /// Sheets the user asked for (shake, notification tap), which stay up even when the app gets blocked.
     var isUserInitiated: Bool {
         switch self {
+        #if !os(tvOS)
         case .feedback, .push: return true
+        #endif
         case .reminder, .whatsNew: return false
         }
     }
@@ -31,8 +36,10 @@ private enum GateSheet: Identifiable {
         switch self {
         case .reminder: return "reminder"
         case .whatsNew: return "whatsNew"
+        #if !os(tvOS)
         case .feedback: return "feedback"
         case .push(let presentation): return presentation.id
+        #endif
         }
     }
 }
@@ -55,15 +62,20 @@ struct ShipKitGateModifier: ViewModifier {
                 switch sheet {
                 case .reminder(let info):
                     ShipKit.UpdateReminderSheet(info)
+                        .skSheetSize(width: 440, height: 460)
                 case .whatsNew(let whatsNew):
                     ShipKit.WhatsNewView(whatsNew)
+                        .skSheetSize(width: 460, height: 520)
+                #if !os(tvOS)
                 case .feedback:
                     FeedbackSheet(category: .bug)
                 case .push(let presentation):
                     PushPresentationView(presentation: presentation)
+                        .skSheetSize()
+                #endif
                 }
             }
-            .fullScreenCover(isPresented: coverBinding) {
+            .skBlockingCover(isPresented: coverBinding) {
                 BlockingScreen()
             }
             .task {
@@ -76,12 +88,21 @@ struct ShipKitGateModifier: ViewModifier {
                 evaluate()
             }
             .onAppear { model.mountedGates += 1 }
-            .onDisappear { model.mountedGates -= 1 }
+            .onDisappear {
+                model.mountedGates -= 1
+                model.gateSheetVisible = false
+            }
+            #if !os(tvOS)
             // Delivered on the next run loop pass so the new value is already stored.
             .onReceive(model.$pendingPush.receive(on: DispatchQueue.main)) { _ in
                 presentPendingPush()
             }
+            .onReceive(NotificationCenter.default.publisher(for: FeedbackTrigger.notification)) { _ in
+                presentShakeFeedback()
+            }
+            #endif
             .onChange(of: sheet?.id) { id in
+                model.gateSheetVisible = id != nil
                 guard id == nil else { return }
                 Task {
                     // Let the dismissal finish; presenting during it gets dropped.
@@ -95,9 +116,6 @@ struct ShipKitGateModifier: ViewModifier {
             .onReceive(model.$configRevision.dropFirst()) { _ in
                 installShakeIfNeeded()
             }
-            .onReceive(NotificationCenter.default.publisher(for: ShakeDetector.notification)) { _ in
-                presentShakeFeedback()
-            }
     }
 
     private func evaluate() {
@@ -107,7 +125,7 @@ struct ShipKitGateModifier: ViewModifier {
             if let current = sheet, !current.isUserInitiated { sheet = nil }
             return
         }
-        guard sheet == nil, model.pendingPush == nil, !model.presentedGateSheetThisSession else { return }
+        guard sheet == nil, !hasPendingPush, !model.presentedGateSheetThisSession else { return }
 
         let reminderState = engine.reminderState
         if let whatsNew = engine.snapshot?.version?.whatsNew,
@@ -128,7 +146,16 @@ struct ShipKitGateModifier: ViewModifier {
         }
     }
 
+    private var hasPendingPush: Bool {
+        #if os(tvOS)
+        false
+        #else
+        model.pendingPush != nil
+        #endif
+    }
+
     private func presentPendingPush() {
+        #if !os(tvOS)
         guard ready, sheet == nil, !model.versionStatus.isBlocking, let pending = model.pendingPush else { return }
         model.pendingPush = nil
         // A sheet can't be stacked on top of one the app presented itself, so go through UIKit then.
@@ -137,19 +164,28 @@ struct ShipKitGateModifier: ViewModifier {
         } else {
             sheet = .push(pending)
         }
+        #endif
     }
 
     private func installShakeIfNeeded() {
+        #if os(iOS)
         if ShipKit.config.feedback.shakeToReport {
             ShakeDetector.install()
         }
+        #endif
     }
 
+    #if !os(tvOS)
     private func presentShakeFeedback() {
-        guard ShipKit.config.feedback.shakeToReport, sheet == nil, !model.versionStatus.isBlocking else { return }
+        // On the Mac the trigger is the menu command, which the app adds on purpose.
+        #if os(iOS)
+        guard ShipKit.config.feedback.shakeToReport else { return }
+        #endif
+        guard sheet == nil, !model.versionStatus.isBlocking else { return }
         ScreenCapture.captureForFeedback()
         sheet = .feedback
     }
+    #endif
 }
 
 private struct BlockingScreen: View {
@@ -164,7 +200,7 @@ private struct BlockingScreen: View {
         case .checkRequired:
             ShipKit.CheckRequiredView()
         case .ok, .updateRecommended:
-            Color(uiColor: .systemBackground).ignoresSafeArea()
+            Color.skBackground.ignoresSafeArea()
         }
     }
 }

@@ -184,3 +184,10 @@
 "push.updates.footer" = "送信したフィードバックや、送信・投票した機能リクエストのステータスが変わったときに通知します。受け取らない場合はオフにしてください。";
 "statusUpdate.unavailable" = "この項目は利用できなくなりました。";
 "feedback.email.label" = "メールアドレス";
+
+// In-app asks
+"ask.invite.title" = "少しお時間よろしいですか？";
+"ask.invite.body" = "簡単な質問にお答えいただけますか。";
+"ask.invite.body.feedback" = "ご意見をお聞かせください。";
+"ask.invite.accept" = "回答する";
+"ask.invite.decline" = "今はしない";

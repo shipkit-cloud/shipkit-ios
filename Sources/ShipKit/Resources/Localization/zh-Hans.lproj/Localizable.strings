@@ -184,3 +184,10 @@
 "push.updates.footer" = "当你提交的反馈或你提交、投票的功能请求状态变化时通知你。关闭后将不再收到。";
 "statusUpdate.unavailable" = "此内容已不可用。";
 "feedback.email.label" = "电子邮件";
+
+// In-app asks
+"ask.invite.title" = "有空吗？";
+"ask.invite.body" = "我们有个小问题想问问你。";
+"ask.invite.body.feedback" = "很想听听你的想法。";
+"ask.invite.accept" = "参与";
+"ask.invite.decline" = "以后再说";

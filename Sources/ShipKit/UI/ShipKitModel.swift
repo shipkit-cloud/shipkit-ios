@@ -12,9 +12,13 @@ final class ShipKitModel: ObservableObject {
     @Published private(set) var pushAsksEnabled = true
     @Published private(set) var pushUpdatesEnabled = true
     /// A push presentation waiting for `.shipKitGate()` (or the UIKit fallback) to show it.
+    #if !os(tvOS)
     @Published var pendingPush: PushPresentation?
+    #endif
     /// Number of `.shipKitGate()` modifiers currently on screen.
     var mountedGates = 0
+    /// A gate sheet (reminder, What's New, push, shake feedback) is on screen. In-app asks wait.
+    var gateSheetVisible = false
 
     /// Only one gate sheet (reminder or What's New) is shown per launch.
     var presentedGateSheetThisSession = false
@@ -44,7 +48,7 @@ final class ShipKitModel: ObservableObject {
 public struct ShipKitTheme: Sendable {
     public var primaryColor: Color = .accentColor
     public var badgeColor: Color = .red
-    public var developerBubbleColor: Color = Color(uiColor: .secondarySystemBackground)
+    public var developerBubbleColor: Color = Color.skSecondaryBackground
     public var userBubbleTextColor: Color = .white
     public var cornerRadius: CGFloat = 14
 
@@ -54,6 +58,7 @@ public struct ShipKitTheme: Sendable {
 public struct ShipKitConfig: Sendable {
     public struct Feedback: Sendable {
         /// Opens the feedback form when the device is shaken. Requires `.shipKitGate()` on the root view.
+        /// iOS only: on macOS add `ShipKitFeedbackCommands` to the scene instead.
         public var shakeToReport = false
         /// Allows attaching screenshots (photo library and current screen). When off, a custom form's
         /// screenshot field is hidden too.

@@ -32,7 +32,7 @@ struct RequestContext: Codable, Equatable, Sendable {
     var paymentMonthly: Double?
     var appVersion: String
     var build: String
-    var platform: String = "ios"
+    var platform: String = ShipKitPlatform.current.rawValue
     var osVersion: String?
     var locale: String?
     var language: String?
@@ -48,6 +48,18 @@ enum DeviceInfo {
         if let simulated = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"], !simulated.isEmpty {
             return simulated
         }
+        #if os(macOS)
+        var size = 0
+        sysctlbyname("hw.model", nil, &size, nil, 0)
+        if size > 0 {
+            var buffer = [CChar](repeating: 0, count: size)
+            if sysctlbyname("hw.model", &buffer, &size, nil, 0) == 0 {
+                let bytes = buffer.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }
+                let model = String(decoding: bytes, as: UTF8.self)
+                if !model.isEmpty { return model }
+            }
+        }
+        #endif
         var systemInfo = utsname()
         uname(&systemInfo)
         return withUnsafeBytes(of: &systemInfo.machine) { buffer in

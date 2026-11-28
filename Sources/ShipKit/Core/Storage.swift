@@ -16,6 +16,8 @@ struct Preferences: @unchecked Sendable {
         case pushUpdates = "ShipKit.pushUpdates"
         case pushPendingAnswers = "ShipKit.pushPendingAnswers"
         case firstLaunch = "ShipKit.firstLaunch"
+        case askSeen = "ShipKit.askSeen"
+        case askOutbox = "ShipKit.askOutbox"
     }
 
     func data(_ key: Key) -> Data? { defaults.data(forKey: key.rawValue) }
@@ -36,7 +38,13 @@ enum InstallID {
     private static let account = "stable-id"
 
     /// Returns the install UUID, creating it on first use. Kept in the Keychain so it survives reinstalls.
+    ///
+    /// On macOS the Keychain is skipped: the login keychain can ask the user for access, and
+    /// preferences already outlive the app there.
     static func resolve(preferences: Preferences, useKeychain: Bool = true) -> String {
+        #if os(macOS)
+        let useKeychain = false
+        #endif
         if useKeychain, let existing = readKeychain() {
             preferences.set(existing, for: .installID)
             return existing
@@ -101,16 +109,33 @@ struct SnapshotStore: Sendable {
     let directory: URL
 
     static var defaultDirectory: URL {
-        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+        #if os(tvOS)
+        // tvOS only guarantees the caches folder. The snapshot can always be fetched again.
+        let search = FileManager.SearchPathDirectory.cachesDirectory
+        #else
+        let search = FileManager.SearchPathDirectory.applicationSupportDirectory
+        #endif
+        let base = FileManager.default.urls(for: search, in: .userDomainMask).first
             ?? URL(fileURLWithPath: NSTemporaryDirectory())
+        #if os(macOS)
+        // Apps outside the sandbox share one Application Support folder, so each gets its own.
+        return base
+            .appendingPathComponent(Bundle.main.bundleIdentifier ?? "ShipKit", isDirectory: true)
+            .appendingPathComponent("ShipKit", isDirectory: true)
+        #else
         return base.appendingPathComponent("ShipKit", isDirectory: true)
+        #endif
     }
 
     private var bodyURL: URL { directory.appendingPathComponent("snapshot.json") }
     private var requestURL: URL { directory.appendingPathComponent("snapshot-request.json") }
     private var metaURL: URL { directory.appendingPathComponent("snapshot-meta.json") }
 
+    #if os(macOS)
+    private static let writeOptions: Data.WritingOptions = [.atomic]
+    #else
     private static let writeOptions: Data.WritingOptions = [.atomic, .completeFileProtectionUntilFirstUserAuthentication]
+    #endif
 
     /// Loads the cached snapshot.
     ///

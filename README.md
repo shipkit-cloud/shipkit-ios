@@ -1,11 +1,27 @@
-# ShipKit for iOS
+# ShipKit for iOS, macOS and tvOS
 
-Remote settings, feature flags, version enforcement, update reminders, in-app feedback with a reply inbox, feature ratings, a feature request board and push campaigns (questions, feedback requests, messages), for iOS 16+.
+Remote settings, feature flags, version enforcement, update reminders, in-app feedback with a reply inbox, feature ratings, a feature request board, in-app asks and push campaigns (questions, feedback requests, messages), for iOS 16+, macOS 13+ and tvOS 16+.
 
 - Zero dependencies, Swift 6 strict concurrency.
 - Never blocks launch: reads come from memory (disk cache, then bundled defaults, then your call-site default) and the network refresh runs in the background.
-- Never asks for reviews or feedback on its own. Feedback and rating UI only appears where you put it, or on shake if you opt in.
+- Never asks for reviews or feedback on its own. Feedback and rating UI only appears where you put it, or on shake (iOS) or from a menu command (macOS) if you opt in. In-app asks from the dashboard wait until your app presents them.
 - Never asks for notification permission on its own. Only `ShipKit.requestPushPermission()` does.
+
+## Platforms
+
+| | iOS 16+ | macOS 13+ | tvOS 16+ |
+|---|---|---|---|
+| Remote settings and feature flags | ✓ | ✓ | ✓ |
+| Version gate, update reminders, What's New | ✓ | ✓ | ✓ |
+| Feature ratings (`RatingRow`) | ✓ | ✓ | ✓ |
+| Feedback form, inbox, request board | ✓ | ✓ | – |
+| Push campaigns | ✓ | ✓ | – |
+| In-app asks | ✓ | ✓ | – |
+| Debug screen | ✓ | ✓ | – |
+
+Each platform is its own project in the dashboard, with its own keys, version rules and minimum OS. If your app ships on iPhone and Mac, create two projects and configure each target with its own client key. A Mac Catalyst app is an iOS app and uses the iOS project.
+
+On tvOS the feedback, push, in-app ask and debug APIs are not compiled in, so wrap calls to them in `#if !os(tvOS)` in shared code.
 
 ## Installation
 
@@ -18,7 +34,7 @@ https://github.com/shipkit-cloud/shipkit-ios.git
 In Xcode: **File > Add Package Dependencies…**, paste the URL, and add the `ShipKit` library to your app target. In `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/shipkit-cloud/shipkit-ios.git", from: "1.3.0")
+.package(url: "https://github.com/shipkit-cloud/shipkit-ios.git", from: "1.5.0")
 // ...
 .product(name: "ShipKit", package: "shipkit-ios")
 ```
@@ -171,6 +187,15 @@ Shake to report is off by default. To turn it on:
 ShipKit.config.feedback.shakeToReport = true   // requires .shipKitGate() on the root view
 ```
 
+A Mac can't be shaken. Add the menu command instead: it puts **Send Feedback…** in the Help menu and opens the form over the front window, with a picture of that window ready to attach. It needs `.shipKitGate()` on the window's root view too.
+
+```swift
+WindowGroup { ContentView().shipKitGate() }
+    .commands { ShipKitFeedbackCommands() }   // optional: ShipKitFeedbackCommands(shortcut: KeyboardShortcut("f", modifiers: [.command, .shift]))
+```
+
+To open the same form from your own button or menu, call `ShipKit.presentFeedback()` (macOS). The screenshot is drawn from your app's own window, so it needs no screen recording permission.
+
 ### Customisation
 
 ```swift
@@ -185,7 +210,9 @@ Built-in strings are localized in English, German, Spanish, French, Italian, Jap
 
 ## Push notifications
 
-ShipKit can deliver questions, feedback requests and messages that you write in the dashboard. Push is opt-in twice: your app decides when to ask iOS for permission (ShipKit never calls `requestAuthorization` or `registerForRemoteNotifications` by itself), and every install can switch developer questions off from your settings screen.
+Available on iOS and macOS. Apple TV shows no notification banners or actions, so there are no push campaigns on tvOS.
+
+ShipKit can deliver questions, feedback requests and messages that you write in the dashboard. Push is opt-in twice: your app decides when to ask the system for permission (ShipKit never calls `requestAuthorization` or `registerForRemoteNotifications` by itself), and every install can switch developer questions off from your settings screen.
 
 ### 1. Enable the capability
 
@@ -197,7 +224,7 @@ ShipKit reports the token's APNs environment as `sandbox` in debug builds and `p
 ShipKit.configure(with: "skc_prod_...") { o in
     o.push.environment = .sandbox              // nil (default) = automatic
     o.push.foregroundPresentation = [.banner, .sound, .list]
-    o.push.openURL = { url in router.open(url) } // message links; default is UIApplication.shared.open
+    o.push.openURL = { url in router.open(url) } // message links; default opens the URL with the system
     o.push.openUpdate = { target in router.show(target) } // status updates; default presents a sheet
 }
 ```
@@ -223,6 +250,28 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        ShipKit.setPushToken(deviceToken)
+    }
+}
+```
+
+On macOS the delegate is an `NSApplicationDelegate`:
+
+```swift
+@main
+struct MyApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    init() { ShipKit.configure(with: "skc_prod_...") }
+    var body: some Scene { WindowGroup { ContentView().shipKitGate() } }
+}
+
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        UNUserNotificationCenter.current().delegate = ShipKit.notificationDelegate
+        NSApplication.shared.registerForRemoteNotifications()
+    }
+
+    func application(_ application: NSApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         ShipKit.setPushToken(deviceToken)
     }
 }
@@ -326,6 +375,56 @@ xcrun simctl push booted dev.shipkit.demo Example/push-samples/question-scale.ap
 
 The sample delivery IDs don't exist on a real backend, so sending an answer from them fails. Campaigns from the dashboard carry real IDs.
 
+## In-app asks
+
+A question or feedback request you write in the dashboard (Campaigns → New campaign → In-app) can also be delivered inside the app, without push. It arrives with the next config refresh and waits there. **ShipKit never shows it by itself**: your app picks the moment, ideally right after the user finished something rather than in the middle of a task. Needs SDK 1.5.0 or later; not available on tvOS.
+
+When the app presents it, a compact sheet asks "Got a minute?" (or the invite you wrote) with **Take part** and **Not now**. Take part opens the question sheet or the feedback form; the answer goes to the campaign's results and, when it has text, to the feedback inbox where you can reply.
+
+Show it when a screen appears:
+
+```swift
+OrderConfirmationView()
+    .shipKitAsk()                         // waits ~0.7 s for the screen's transition
+
+EditorView()
+    .shipKitAsk(isActive: !isSaving) { result in
+        // .notShown, .dismissed or .answered
+    }
+```
+
+Or from your own code, for example after a finished export:
+
+```swift
+let result = await ShipKit.presentPendingAsk()
+if result == .answered { /* thank them in your own way, if you like */ }
+```
+
+Draw your own entry point and skip the invite step:
+
+```swift
+if ShipKit.pendingAsk != nil {
+    Button("We have a question for you") {
+        Task { await ShipKit.presentPendingAsk(showsInvite: false) }
+    }
+}
+```
+
+`presentPendingAsk()` returns `.notShown` right away when nothing is pending, the user turned off questions from the developer, a version rule blocks the app, or another ShipKit sheet is on screen. `.shipKitAsk()` only looks when the view appears or `isActive` turns `true`; an ask that arrives while the view is already showing waits for the next time.
+
+How often people are asked:
+
+- Each user sees a given ask once, across their installs. **Not now** counts.
+- One frequency cap covers push campaigns and in-app asks (Campaigns → Setup): someone who saw an ask gets no push campaign until the days pass, and the other way round.
+- An ask runs between its start and end date (14 days by default, at most 90) and can be ended early. Apps pick up a start or end with their next refresh.
+- The `ShipKitPushAsksToggle()` switch (also available as `ShipKitAsksToggle()`) turns off in-app asks too, so add it to your settings even if you don't use push.
+
+Shown, dismissed and answered are reported to the server as they happen; when the device is offline they wait and go out with the next refresh. Never use an ask to request an App Store rating or to offer something in return for an answer.
+
+**Testing.** In the campaign editor, enter your user ID, email or install ID under Run → Test. Within the next hour that install is offered the ask once, even if it saw it before or turned asks off; press Test again to see it again. The app needs a refresh to pick it up: relaunch it or tap Refresh on the debug screen (on foreground it refreshes at most every 15 minutes), then open a screen that shows asks.
+
+**Previews.** `ShipKit.configureForTesting(snapshot: ShipKitSnapshot(ask: ShipKitAsk(id: "preview", question: "How is the new editor?", type: .scale)))` makes `presentPendingAsk()` show that ask without a backend.
+
 ## Signed snapshots
 
 When `signingKey` is set, every snapshot response, `200` and `304 Not Modified` alike, must carry a valid `X-ShipKit-Signature-V2`. Copy the public key (base64 of the raw 32 bytes) from the dashboard.
@@ -386,22 +485,25 @@ func testPaywallB() {
 Run the SDK tests from this folder:
 
 ```
+swift test                                                                              # macOS
 xcodebuild test -scheme ShipKit -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+xcodebuild test -scheme ShipKit -destination 'platform=tvOS Simulator,name=Apple TV'
 ```
 
 ## Privacy
 
 - No tracking and no advertising identifiers. The SDK ships a `PrivacyInfo.xcprivacy` that declares no tracking and the UserDefaults API reason `CA92.1`. It lists every data type ShipKit can collect: device ID (the install UUID), product interaction (pings, flag exposures, ratings), customer support content, photos (screenshots the user attaches), plus email, user ID, name and purchase info, which are only sent if you call `identify` or the user types them in. The manifest marks them all as linked to the user, because they are once you call `identify` or the user leaves an email. What you answer in App Store Connect depends on the features you use: see [App Store privacy labels](https://shipkit.cloud/docs/#privacy-labels), or run `npx @shipkit-cloud/cli privacy` in your project folder.
-- The install ID is a random UUID stored in the Keychain, so it stays the same across reinstalls. It isn't derived from any hardware identifier.
+- The install ID is a random UUID. On iOS and tvOS it is stored in the Keychain, so it stays the same across reinstalls. On macOS it is stored in the app's preferences. It isn't derived from any hardware identifier.
 - Request context: app version and build, OS version, device model identifier, locale, language and region, plus whatever you passed to `identify`.
-- Snapshots are cached in `Application Support/ShipKit/`, which is excluded from backups.
+- Snapshots are cached in `Application Support/ShipKit/` (inside a folder named after your bundle ID on macOS, and in the caches folder on tvOS), which is excluded from backups.
 - Telemetry can be turned off with `o.telemetry = .off`.
 - The APNs device token is only sent if your app calls `setPushToken`, together with the notification authorization status. Answers to push questions are sent with the request context, like feedback.
+- In-app asks report when an ask was shown, dismissed or answered, with the app version. Answers are sent with the request context, like feedback.
 - Answers to questions you add to the feedback form are sent with the feedback. Declare whatever they collect in your privacy label. An email typed into a form whose email field is marked for status updates is used to send those updates.
 
 ## Demo app
 
-`Example/` contains a SwiftUI demo. Generate the project with XcodeGen and run it:
+`Example/` contains a SwiftUI demo with three targets: `ShipKitDemo` (iOS), `ShipKitDemoMac` and `ShipKitDemoTV`. Generate the project with XcodeGen and run it:
 
 ```
 cd Example

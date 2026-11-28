@@ -147,3 +147,12 @@ struct TestSigner: Sendable {
         MockResponse(status: 304, headers: ["X-ShipKit-Signature-V2": signature(for: request, body: cachedBody)])
     }
 }
+
+/// The platform name the SDK must report for the platform the tests run on.
+#if os(tvOS)
+let expectedPlatform = "tvos"
+#elseif os(macOS)
+let expectedPlatform = "macos"
+#else
+let expectedPlatform = "ios"
+#endif

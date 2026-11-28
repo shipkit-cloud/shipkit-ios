@@ -1,3 +1,4 @@
+#if !os(tvOS)
 import SwiftUI
 
 private enum BoardSegment: String, CaseIterable, Identifiable {
@@ -146,6 +147,7 @@ extension ShipKit {
                     store.requests.insert(created, at: 0)
                     segment = .open
                 }
+                .skSheetSize(width: 460, height: 420)
             }
             .refreshable { await store.load() }
             .task { if !store.loaded { await store.load() } }
@@ -294,7 +296,7 @@ struct RequestDetailView: View {
                     .lineLimit(1...4)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .background(RoundedRectangle(cornerRadius: 18).fill(Color(uiColor: .secondarySystemBackground)))
+                    .background(RoundedRectangle(cornerRadius: 18).fill(Color.skSecondaryBackground))
                 Button(action: send) {
                     if sending {
                         ProgressView().frame(width: 32, height: 32)
@@ -307,14 +309,14 @@ struct RequestDetailView: View {
             }
             .padding(.horizontal)
             .padding(.vertical, 8)
-            .background(.bar)
+            .skBarBackground()
         }
         .alert(L("feedback.error.title"), isPresented: Binding(get: { errorText != nil }, set: { if !$0 { errorText = nil } })) {
             Button(L("common.ok"), role: .cancel) {}
         } message: {
             Text(errorText ?? "")
         }
-        .navigationBarTitleDisplayMode(.inline)
+        .skInlineTitle()
         .task { await loadComments() }
         .shipKitTint()
     }
@@ -384,9 +386,7 @@ private struct NewRequestSheet: View {
                 if ShipKit.config.feedback.asksForEmail {
                     Section {
                         TextField(L("feedback.email.placeholder"), text: $email)
-                            .keyboardType(.emailAddress)
-                            .textContentType(.emailAddress)
-                            .textInputAutocapitalization(.never)
+                            .skEmailField()
                             .autocorrectionDisabled()
                     } header: {
                         Text(L("feedback.email"))
@@ -398,7 +398,7 @@ private struct NewRequestSheet: View {
             .disabled(sending)
             .shipKitDismissesKeyboard()
             .navigationTitle(L("requests.new"))
-            .navigationBarTitleDisplayMode(.inline)
+            .skInlineTitle()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(L("common.cancel")) { dismiss() }
@@ -438,3 +438,4 @@ private struct NewRequestSheet: View {
         }
     }
 }
+#endif

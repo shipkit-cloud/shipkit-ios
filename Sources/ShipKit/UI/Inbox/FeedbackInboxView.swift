@@ -1,3 +1,4 @@
+#if !os(tvOS)
 import SwiftUI
 
 extension ShipKit {
@@ -147,7 +148,7 @@ struct FeedbackThreadView: View {
         .safeAreaInset(edge: .bottom) { composer }
         .shipKitDismissesKeyboard()
         .navigationTitle((current ?? thread).category.title)
-        .navigationBarTitleDisplayMode(.inline)
+        .skInlineTitle()
         .task { await load() }
         .shipKitTint()
     }
@@ -158,7 +159,7 @@ struct FeedbackThreadView: View {
                 .lineLimit(1...5)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .background(RoundedRectangle(cornerRadius: 18).fill(Color(uiColor: .secondarySystemBackground)))
+                .background(RoundedRectangle(cornerRadius: 18).fill(Color.skSecondaryBackground))
                 .focused($composerFocused)
             Button(action: send) {
                 if sending {
@@ -173,7 +174,7 @@ struct FeedbackThreadView: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
-        .background(.bar)
+        .skBarBackground()
     }
 
     private func load() async {
@@ -246,3 +247,4 @@ private struct MessageBubble: View {
         }
     }
 }
+#endif

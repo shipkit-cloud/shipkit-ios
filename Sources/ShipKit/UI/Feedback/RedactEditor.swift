@@ -1,10 +1,13 @@
+#if !os(tvOS)
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#endif
 
 /// Lets the user black out sensitive parts of a screenshot by dragging rectangles over it.
 struct RedactEditor: View {
-    let image: UIImage
-    let onDone: (UIImage) -> Void
+    let image: PlatformImage
+    let onDone: (PlatformImage) -> Void
 
     @Environment(\.dismiss) private var dismiss
     /// Boxes in normalized image coordinates (0...1), so they survive layout changes.
@@ -16,7 +19,7 @@ struct RedactEditor: View {
             GeometryReader { proxy in
                 let frame = fittedFrame(in: proxy.size)
                 ZStack(alignment: .topLeading) {
-                    Image(uiImage: image)
+                    Image(platformImage: image)
                         .resizable()
                         .frame(width: frame.width, height: frame.height)
                         .offset(x: frame.minX, y: frame.minY)
@@ -42,7 +45,7 @@ struct RedactEditor: View {
                 )
             }
             .padding()
-            .background(Color(uiColor: .systemGroupedBackground))
+            .background(Color.skGroupedBackground)
             .safeAreaInset(edge: .bottom) {
                 Text(L("redact.hint"))
                     .font(.footnote)
@@ -50,7 +53,7 @@ struct RedactEditor: View {
                     .padding(.bottom, 8)
             }
             .navigationTitle(L("redact.title"))
-            .navigationBarTitleDisplayMode(.inline)
+            .skInlineTitle()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(L("common.cancel")) { dismiss() }
@@ -61,7 +64,7 @@ struct RedactEditor: View {
                         dismiss()
                     }
                 }
-                ToolbarItem(placement: .bottomBar) {
+                ToolbarItem(placement: Self.undoPlacement) {
                     Button {
                         _ = boxes.popLast()
                     } label: {
@@ -71,6 +74,14 @@ struct RedactEditor: View {
                 }
             }
         }
+    }
+
+    private static var undoPlacement: ToolbarItemPlacement {
+        #if os(iOS)
+        .bottomBar
+        #else
+        .automatic
+        #endif
     }
 
     private func fittedFrame(in size: CGSize) -> CGRect {
@@ -94,8 +105,11 @@ struct RedactEditor: View {
         return CGRect(x: min(a.x, b.x), y: min(a.y, b.y), width: abs(a.x - b.x), height: abs(a.y - b.y))
     }
 
-    private func render() -> UIImage {
+    private func render() -> PlatformImage {
         guard !boxes.isEmpty else { return image }
+        #if os(macOS)
+        return image.redrawn(pixelSize: image.pixelSize, blackBoxes: boxes)
+        #else
         let format = UIGraphicsImageRendererFormat()
         format.scale = image.scale
         let size = image.size
@@ -106,5 +120,7 @@ struct RedactEditor: View {
                 context.fill(CGRect(x: box.minX * size.width, y: box.minY * size.height, width: box.width * size.width, height: box.height * size.height))
             }
         }
+        #endif
     }
 }
+#endif

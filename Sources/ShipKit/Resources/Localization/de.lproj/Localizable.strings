@@ -184,3 +184,10 @@
 "push.updates.footer" = "Mitteilungen, wenn sich der Status deines Feedbacks oder eines Funktionswunschs ändert, den du eingereicht oder unterstützt hast. Schalte dies aus, um sie nicht mehr zu erhalten.";
 "statusUpdate.unavailable" = "Dieser Eintrag ist nicht mehr verfügbar.";
 "feedback.email.label" = "E-Mail";
+
+// In-app asks
+"ask.invite.title" = "Hast du kurz Zeit?";
+"ask.invite.body" = "Wir haben eine kurze Frage an dich.";
+"ask.invite.body.feedback" = "Wir würden gern hören, was du denkst.";
+"ask.invite.accept" = "Mitmachen";
+"ask.invite.decline" = "Nicht jetzt";

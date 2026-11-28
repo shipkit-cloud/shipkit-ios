@@ -76,6 +76,7 @@ final class Engine: Sendable {
     private let refreshGate = RefreshGate()
     let onChange: @Sendable () -> Void
     let pushState: OSAllocatedUnfairLock<PushState>
+    let askState: OSAllocatedUnfairLock<AskState>
 
     var options: ShipKitOptions { configuration.options }
     var preferences: Preferences { configuration.preferences }
@@ -145,6 +146,7 @@ final class Engine: Sendable {
         }
         state = OSAllocatedUnfairLock(initialState: initial)
         pushState = OSAllocatedUnfairLock(initialState: PushState(preferences: preferences, persistent: configuration.persistent))
+        askState = OSAllocatedUnfairLock(initialState: AskState(preferences: preferences, persistent: configuration.persistent))
     }
 
     // MARK: - Values
@@ -320,6 +322,8 @@ final class Engine: Sendable {
 
     private func performRefresh() async {
         state.withLock { $0.lastRefreshAttempt = Date() }
+        // Before the snapshot, so the server already knows which ask this install saw.
+        await flushAskOutbox()
         do {
             try await fetchSnapshot()
             state.withLock {
@@ -494,7 +498,8 @@ final class Engine: Sendable {
         email: String?,
         images: [ImagePayload],
         answers: [FeedbackAnswer]? = nil,
-        formRev: String? = nil
+        formRev: String? = nil,
+        ask: ShipKitAsk? = nil
     ) async throws -> FeedbackSubmitResult {
         var submission = FeedbackSubmission(
             category: category,
@@ -504,7 +509,9 @@ final class Engine: Sendable {
             attachments: [],
             context: makeContext(),
             answers: answers,
-            formRev: formRev
+            formRev: formRev,
+            askId: ask?.id,
+            askTest: ask?.isTest == true ? true : nil
         )
         var remaining = images
         do {

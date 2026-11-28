@@ -1,3 +1,4 @@
+#if !os(tvOS)
 import SwiftUI
 
 private struct OverrideTarget: Identifiable {
@@ -43,6 +44,7 @@ extension ShipKit {
             }
             .sheet(item: $editing) { target in
                 OverrideEditor(target: target)
+                    .skSheetSize(width: 420, height: 320)
             }
         }
 
@@ -67,9 +69,9 @@ extension ShipKit {
             Section {
                 HStack {
                     TextField(engine.configuration.appInfo.marketingVersion, text: $simulatedVersion)
-                        .keyboardType(.numbersAndPunctuation)
+                        .skNumbersKeyboard()
                         .autocorrectionDisabled()
-                        .textInputAutocapitalization(.never)
+                        .skNoAutocapitalization()
                     Button(L("debug.apply")) {
                         engine.setSimulatedVersion(simulatedVersion)
                         Task { await engine.refresh() }
@@ -209,7 +211,7 @@ private struct OverrideEditor: View {
                         TextField(L("debug.override.placeholder"), text: $text, axis: .vertical)
                             .font(.body.monospaced())
                             .autocorrectionDisabled()
-                            .textInputAutocapitalization(.never)
+                            .skNoAutocapitalization()
                     }
                 } header: {
                     Text(L("debug.override"))
@@ -226,7 +228,7 @@ private struct OverrideEditor: View {
                 }
             }
             .navigationTitle(target.key)
-            .navigationBarTitleDisplayMode(.inline)
+            .skInlineTitle()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(L("common.cancel")) { dismiss() }
@@ -258,3 +260,4 @@ private struct OverrideEditor: View {
         }
     }
 }
+#endif

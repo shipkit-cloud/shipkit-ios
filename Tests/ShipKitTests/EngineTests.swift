@@ -118,13 +118,13 @@ final class EngineTests: XCTestCase {
         XCTAssertEqual(request.headers["X-ShipKit-Stable-Id"], engine.stableID)
         XCTAssertEqual(engine.stableID, engine.stableID.lowercased())
         XCTAssertNotNil(UUID(uuidString: engine.stableID))
-        XCTAssertEqual(request.headers["X-ShipKit-SDK"], "ios/\(ShipKit.sdkVersion)")
+        XCTAssertEqual(request.headers["X-ShipKit-SDK"], "\(expectedPlatform)/\(ShipKit.sdkVersion)")
         XCTAssertEqual(request.headers["X-Bundle-Id"], "dev.shipkit.tests")
         XCTAssertEqual(request.headers["Content-Type"], "application/json")
 
         let body = try XCTUnwrap(request.body)
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
-        XCTAssertEqual(json["platform"] as? String, "ios")
+        XCTAssertEqual(json["platform"] as? String, expectedPlatform)
         XCTAssertEqual(json["appVersion"] as? String, "2.4.0")
         XCTAssertEqual(json["build"] as? String, "311")
         XCTAssertEqual(json["stableId"] as? String, engine.stableID)
@@ -445,7 +445,7 @@ final class EngineTests: XCTestCase {
         XCTAssertEqual(json["rating"] as? Int, 4)
         XCTAssertEqual(json["attachments"] as? [String], ["att_1"])
         XCTAssertTrue(json["email"] is NSNull)
-        XCTAssertEqual((json["context"] as? [String: Any])?["platform"] as? String, "ios")
+        XCTAssertEqual((json["context"] as? [String: Any])?["platform"] as? String, expectedPlatform)
     }
 
     func testTelemetryPingOncePerDay() async throws {

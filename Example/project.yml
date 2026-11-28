@@ -3,6 +3,8 @@ options:
   bundleIdPrefix: dev.shipkit
   deploymentTarget:
     iOS: "17.0"
+    macOS: "14.0"
+    tvOS: "17.0"
   createIntermediateGroups: true
 packages:
   ShipKit:
@@ -45,7 +47,90 @@ targets:
           - UIInterfaceOrientationPortrait
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
+  # The Mac demo. To try push campaigns, sign it with your team and add the
+  # com.apple.developer.aps-environment entitlement; without it registration fails with a log line.
+  ShipKitDemoMac:
+    type: application
+    platform: macOS
+    sources:
+      - path: ShipKitDemo
+        excludes:
+          - Info.plist
+          - "*.entitlements"
+    dependencies:
+      - package: ShipKit
+        product: ShipKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.shipkit.demo.mac
+        PRODUCT_NAME: ShipKitDemoMac
+        MARKETING_VERSION: "2.4.0"
+        CURRENT_PROJECT_VERSION: "311"
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        ENABLE_PREVIEWS: YES
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "-"
+        ASSETCATALOG_COMPILER_APPICON_NAME: ""
+    info:
+      path: Support/Mac-Info.plist
+      properties:
+        CFBundleDisplayName: ShipKit Demo
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+  # The Apple TV demo: settings, flags, ratings and the version screens.
+  ShipKitDemoTV:
+    type: application
+    platform: tvOS
+    sources:
+      - path: ShipKitDemo
+        excludes:
+          - Info.plist
+          - "*.entitlements"
+    dependencies:
+      - package: ShipKit
+        product: ShipKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.shipkit.demo.tv
+        PRODUCT_NAME: ShipKitDemoTV
+        MARKETING_VERSION: "2.4.0"
+        CURRENT_PROJECT_VERSION: "311"
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        ENABLE_PREVIEWS: YES
+        CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: ""
+    info:
+      path: Support/TV-Info.plist
+      properties:
+        CFBundleDisplayName: ShipKit Demo
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
 schemes:
+  ShipKitDemoMac:
+    build:
+      targets:
+        ShipKitDemoMac: all
+    run:
+      config: Debug
+      environmentVariables:
+        SHIPKIT_API_URL: http://localhost:8787
+        SHIPKIT_CLIENT_KEY: skc_demo
+  ShipKitDemoTV:
+    build:
+      targets:
+        ShipKitDemoTV: all
+    run:
+      config: Debug
+      environmentVariables:
+        SHIPKIT_API_URL: http://localhost:8787
+        SHIPKIT_CLIENT_KEY: skc_demo
   ShipKitDemo:
     build:
       targets:

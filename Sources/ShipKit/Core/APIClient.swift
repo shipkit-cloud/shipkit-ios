@@ -59,7 +59,7 @@ struct APIClient: Sendable {
         request.httpBody = body
         request.setValue("Bearer \(clientKey)", forHTTPHeaderField: "Authorization")
         request.setValue(stableID, forHTTPHeaderField: "X-ShipKit-Stable-Id")
-        request.setValue("ios/\(ShipKit.sdkVersion)", forHTTPHeaderField: "X-ShipKit-SDK")
+        request.setValue("\(ShipKitPlatform.current.rawValue)/\(ShipKit.sdkVersion)", forHTTPHeaderField: "X-ShipKit-SDK")
         request.setValue(bundleID, forHTTPHeaderField: "X-Bundle-Id")
         request.setValue(contentType, forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")

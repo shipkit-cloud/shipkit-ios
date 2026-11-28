@@ -1,6 +1,11 @@
+#if !os(tvOS)
 import Foundation
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#else
+import AppKit
+#endif
 @preconcurrency import UserNotifications
 
 extension ShipKit {
@@ -41,7 +46,7 @@ extension ShipKit {
             ShipKitLog.error("Notification permission request failed: \(error.localizedDescription)")
             granted = false
         }
-        UIApplication.shared.registerForRemoteNotifications()
+        PlatformApp.registerForRemoteNotifications()
         if let engine { await PushSystem.syncToken(engine) }
         return granted
     }
@@ -203,7 +208,7 @@ final class PushCoordinator {
     func attach(_ engine: Engine) {
         detach()
         foregroundObserver = NotificationCenter.default.addObserver(
-            forName: UIApplication.willEnterForegroundNotification,
+            forName: PlatformApp.foregroundNotification,
             object: nil,
             queue: .main
         ) { _ in
@@ -292,11 +297,11 @@ final class PushCoordinator {
             return
         }
         await waitUntilActive()
-        _ = await UIApplication.shared.open(url)
+        PlatformApp.open(url)
     }
 
     private func waitUntilActive() async {
-        for _ in 0..<20 where UIApplication.shared.applicationState != .active {
+        for _ in 0..<20 where !PlatformApp.isActive {
             try? await Task.sleep(for: .milliseconds(250))
         }
     }
@@ -316,7 +321,7 @@ final class PushCoordinator {
             if Task.isCancelled { return }
             let model = ShipKitModel.shared
             guard let pending = model.pendingPush, model.mountedGates == 0 else { return }
-            guard UIApplication.shared.applicationState == .active, let host = PushPresenter.topViewController() else { continue }
+            guard PlatformApp.isActive, let host = PushPresenter.topViewController() else { continue }
             model.pendingPush = nil
             PushPresenter.present(pending, from: host)
             return
@@ -339,6 +344,7 @@ enum PushPresentation: Identifiable, Equatable, Sendable {
     }
 }
 
+#if canImport(UIKit)
 @MainActor
 enum PushPresenter {
     static var keyWindow: UIWindow? {
@@ -366,6 +372,29 @@ enum PushPresenter {
         let controller = UIHostingController(rootView: PushPresentationView(presentation: presentation))
         host.present(controller, animated: true)
     }
+
+    /// Presents any ShipKit view as a sheet. With `compact`, it opens at half height and the view
+    /// can grow it with the closure it gets.
+    static func present<Content: View>(compact: Bool, from host: UIViewController, @ViewBuilder content: (_ expand: @escaping @MainActor () -> Void) -> Content) {
+        let box = WeakController()
+        let controller = UIHostingController(rootView: content {
+            guard let sheet = box.controller?.sheetPresentationController else { return }
+            sheet.animateChanges { sheet.selectedDetentIdentifier = .large }
+        })
+        box.controller = controller
+        if compact, let sheet = controller.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.selectedDetentIdentifier = .medium
+            sheet.prefersGrabberVisible = true
+        }
+        host.present(controller, animated: true)
+    }
+}
+
+/// Lets a hosted view reach its own controller without keeping it alive.
+@MainActor
+final class WeakController {
+    weak var controller: UIViewController?
 }
 
 @MainActor
@@ -386,3 +415,54 @@ final class BackgroundActivity {
         identifier = .invalid
     }
 }
+#else
+@MainActor
+enum PushPresenter {
+    static var keyWindow: NSWindow? {
+        let application = NSApplication.shared
+        return application.mainWindow ?? application.keyWindow ?? application.windows.first(where: \.isVisible)
+    }
+
+    static func topViewController() -> NSViewController? {
+        guard var top = keyWindow?.contentViewController else { return nil }
+        while let presented = top.presentedViewControllers?.last {
+            top = presented
+        }
+        return top
+    }
+
+    /// Something (usually the app's own sheet) is already attached to the front window.
+    static var hasModal: Bool {
+        keyWindow?.attachedSheet != nil
+    }
+
+    static func present(_ presentation: PushPresentation, from host: NSViewController) {
+        let controller = NSHostingController(rootView: PushPresentationView(presentation: presentation).skSheetSize())
+        host.presentAsSheet(controller)
+    }
+
+    /// Presents any ShipKit view as a sheet. Mac sheets have one size; `compact` and the closure do nothing.
+    static func present<Content: View>(compact: Bool, from host: NSViewController, @ViewBuilder content: (_ expand: @escaping @MainActor () -> Void) -> Content) {
+        let controller = NSHostingController(rootView: content {}.skSheetSize())
+        host.presentAsSheet(controller)
+    }
+}
+
+/// Keeps the app from being napped or suspended while an answer is on its way.
+@MainActor
+final class BackgroundActivity {
+    private var token: NSObjectProtocol?
+
+    static func begin(_ name: String) -> BackgroundActivity {
+        let activity = BackgroundActivity()
+        activity.token = ProcessInfo.processInfo.beginActivity(options: [.background, .suddenTerminationDisabled], reason: name)
+        return activity
+    }
+
+    func end() {
+        if let token { ProcessInfo.processInfo.endActivity(token) }
+        token = nil
+    }
+}
+#endif
+#endif

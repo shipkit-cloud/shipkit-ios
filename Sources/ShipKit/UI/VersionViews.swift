@@ -5,7 +5,7 @@ extension ShipKit {
     public struct UpdateRequiredView: View {
         private let info: VersionInfo
         @Environment(\.openURL) private var openURL
-        static let appStoreFallback = URL(string: "itms-apps://apps.apple.com")!
+        static let appStoreFallback = URL(string: "\(ShipKitPlatform.current.storeScheme)://apps.apple.com")!
 
         public init(_ info: VersionInfo) {
             self.info = info
@@ -49,7 +49,7 @@ extension ShipKit {
                     .padding(.bottom, 24)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(uiColor: .systemBackground).ignoresSafeArea())
+            .background(Color.skBackground.ignoresSafeArea())
             .interactiveDismissDisabled()
         }
     }
@@ -129,7 +129,7 @@ extension ShipKit {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 12)
                 .padding(.top, 8)
-                .background(.bar)
+                .skBarBackground()
             }
             .presentationDetents([.medium, .large])
             .shipKitTint()
@@ -182,7 +182,7 @@ extension ShipKit {
             }
             .padding(24)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(uiColor: .systemBackground).ignoresSafeArea())
+            .background(Color.skBackground.ignoresSafeArea())
             .interactiveDismissDisabled()
         }
     }
@@ -226,7 +226,7 @@ extension ShipKit {
             }
             .padding(24)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(uiColor: .systemBackground).ignoresSafeArea())
+            .background(Color.skBackground.ignoresSafeArea())
             .interactiveDismissDisabled()
         }
     }
@@ -274,7 +274,7 @@ extension ShipKit {
                 }
                 .buttonStyle(PrimaryButtonStyle())
                 .padding(24)
-                .background(.bar)
+                .skBarBackground()
             }
         }
     }

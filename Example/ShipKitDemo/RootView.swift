@@ -72,17 +72,22 @@ struct HomeView: View {
                     }
                     LabeledContent("Unread replies", value: "\(unread)")
                 } footer: {
+                    #if os(iOS)
                     Text("Shake the device to report a problem.")
+                    #elseif os(macOS)
+                    Text("Choose Help > Send Feedback… to report a problem.")
+                    #endif
                 }
             }
             .navigationTitle("ShipKit Demo")
-            #if DEBUG
+            #if DEBUG && !os(tvOS)
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button("Debug") { showingDebug = true }
                 }
             }
             #endif
+            #if !os(tvOS)
             .sheet(isPresented: $showingDebug) {
                 NavigationStack {
                     ShipKit.DebugView()
@@ -93,6 +98,7 @@ struct HomeView: View {
                         }
                 }
             }
+            #endif
             .refreshable { await ShipKit.refresh() }
             .task { unread = await ShipKit.unreadCount() }
         }
@@ -122,15 +128,21 @@ private struct PaywallPreview: View {
 struct SettingsView: View {
     @State private var showingDebug = false
     @State private var notificationStatus = "—"
+    #if !os(tvOS)
+    @State private var pendingAsk: ShipKitAsk?
+    #endif
 
     var body: some View {
         NavigationStack {
             Form {
+                // Feedback, the inbox, the request board and push are not part of the SDK on tvOS.
+                #if !os(tvOS)
                 Section("Support") {
                     ShipKit.FeedbackLink()
                     ShipKit.FeedbackInboxLink()
                     ShipKit.RequestBoardLink()
                 }
+                #endif
 
                 Section {
                     ShipKit.RatingRow(feature: "new_editor", title: "How do you like the new editor?")
@@ -138,6 +150,7 @@ struct SettingsView: View {
                     Text("New editor")
                 }
 
+                #if !os(tvOS)
                 Section {
                     LabeledContent("Permission", value: notificationStatus)
                     Button("Enable notifications") {
@@ -151,29 +164,48 @@ struct SettingsView: View {
                     Text("Notifications")
                 }
 
+                // The app decides when an in-app ask appears; here it's a button.
+                Section {
+                    Button(pendingAsk != nil ? "Answer a quick question" : "No question waiting") {
+                        Task {
+                            await ShipKit.presentPendingAsk()
+                            pendingAsk = ShipKit.pendingAsk
+                        }
+                    }
+                    .disabled(pendingAsk == nil)
+                } header: {
+                    Text("In-app ask")
+                }
+
                 ShipKitPushAsksToggle()
                 ShipKitPushUpdatesToggle()
+                #endif
 
                 Section("About") {
                     LabeledContent("Version", value: appVersion)
                     LabeledContent("Install ID") {
                         Text(ShipKit.installID ?? "—")
                             .font(.caption.monospaced())
+                            #if !os(tvOS)
                             .textSelection(.enabled)
+                            #endif
                     }
                 }
 
-                #if DEBUG
+                #if DEBUG && !os(tvOS)
                 Section {
                     Button("Open Debug Menu") { showingDebug = true }
                 }
                 #endif
             }
             .navigationTitle("Settings")
+            #if !os(tvOS)
             .task { await loadNotificationStatus() }
-            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            .onReceive(NotificationCenter.default.publisher(for: Self.foregroundNotification)) { _ in
                 Task { await loadNotificationStatus() }
             }
+            #endif
+            #if !os(tvOS)
             .sheet(isPresented: $showingDebug) {
                 NavigationStack {
                     ShipKit.DebugView()
@@ -184,13 +216,26 @@ struct SettingsView: View {
                         }
                 }
             }
+            #endif
         }
     }
 
+    #if os(iOS)
+    private static let foregroundNotification = UIApplication.willEnterForegroundNotification
+    #elseif os(macOS)
+    private static let foregroundNotification = NSApplication.didBecomeActiveNotification
+    #endif
+
     private func loadNotificationStatus() async {
+        #if !os(tvOS)
+        pendingAsk = ShipKit.pendingAsk
+        #endif
         let settings = await UNUserNotificationCenter.current().notificationSettings()
         switch settings.authorizationStatus {
-        case .authorized, .provisional, .ephemeral: notificationStatus = "Allowed"
+        #if os(iOS)
+        case .ephemeral: notificationStatus = "Allowed"
+        #endif
+        case .authorized, .provisional: notificationStatus = "Allowed"
         case .denied: notificationStatus = "Denied"
         case .notDetermined: notificationStatus = "Not asked yet"
         @unknown default: notificationStatus = "—"

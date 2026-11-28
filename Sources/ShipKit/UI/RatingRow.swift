@@ -43,7 +43,7 @@ extension ShipKit {
                     .frame(width: 36, height: 36)
                     .symbolEffectIfAvailable(value: selected)
             }
-            .buttonStyle(.borderless)
+            .skBorderlessButton()
             .disabled(sending)
             .accessibilityLabel(L(up ? "rating.up" : "rating.down"))
             .accessibilityAddTraits(selected ? .isSelected : [])
@@ -68,8 +68,17 @@ extension ShipKit {
 
 private extension View {
     @ViewBuilder
+    func skBorderlessButton() -> some View {
+        #if os(tvOS)
+        buttonStyle(.plain)
+        #else
+        buttonStyle(.borderless)
+        #endif
+    }
+
+    @ViewBuilder
     func symbolEffectIfAvailable(value: Bool) -> some View {
-        if #available(iOS 17.0, *) {
+        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, *) {
             symbolEffect(.bounce, value: value)
         } else {
             self

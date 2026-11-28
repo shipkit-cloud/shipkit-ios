@@ -184,3 +184,10 @@
 "push.updates.footer" = "Powiadomienia o zmianie statusu Twoich opinii oraz próśb o funkcje, które zgłosiłeś lub na które głosowałeś. Wyłącz, aby przestać je otrzymywać.";
 "statusUpdate.unavailable" = "Ten element nie jest już dostępny.";
 "feedback.email.label" = "E-mail";
+
+// In-app asks
+"ask.invite.title" = "Masz chwilę?";
+"ask.invite.body" = "Mamy do Ciebie krótkie pytanie.";
+"ask.invite.body.feedback" = "Chętnie poznamy Twoją opinię.";
+"ask.invite.accept" = "Wezmę udział";
+"ask.invite.decline" = "Nie teraz";

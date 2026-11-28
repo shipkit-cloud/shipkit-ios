@@ -1,10 +1,15 @@
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#endif
 
 struct PrimaryButtonStyle: ButtonStyle {
     @MainActor var color: Color { ShipKit.theme.primaryColor }
 
     func makeBody(configuration: Configuration) -> some View {
+        #if os(tvOS)
+        FocusableBody(configuration: configuration, color: color)
+        #else
         configuration.label
             .font(.headline)
             .frame(maxWidth: .infinity)
@@ -14,7 +19,32 @@ struct PrimaryButtonStyle: ButtonStyle {
                 RoundedRectangle(cornerRadius: ShipKitThemeReader.cornerRadius, style: .continuous)
                     .fill(color.opacity(configuration.isPressed ? 0.8 : 1))
             )
+        #endif
     }
+
+    #if os(tvOS)
+    /// A custom button style gets no focus effect from the system, so this draws its own.
+    private struct FocusableBody: View {
+        let configuration: Configuration
+        let color: Color
+        @Environment(\.isFocused) private var isFocused
+
+        var body: some View {
+            configuration.label
+                .font(.headline)
+                .frame(maxWidth: 640)
+                .padding(.vertical, 22)
+                .foregroundStyle(.white)
+                .background(
+                    RoundedRectangle(cornerRadius: ShipKitThemeReader.cornerRadius, style: .continuous)
+                        .fill(color.opacity(configuration.isPressed ? 0.8 : (isFocused ? 1 : 0.55)))
+                )
+                .scaleEffect(isFocused ? 1.06 : 1)
+                .shadow(color: .black.opacity(isFocused ? 0.35 : 0), radius: 18, y: 10)
+                .animation(.easeOut(duration: 0.15), value: isFocused)
+        }
+    }
+    #endif
 }
 
 @MainActor
@@ -102,13 +132,13 @@ struct ErrorBanner: View {
 /// Loads an upload through the authenticated API (plain `AsyncImage` can't send the client headers).
 struct AttachmentImage: View {
     let id: String
-    @State private var image: UIImage?
+    @State private var image: PlatformImage?
     @State private var failed = false
 
     var body: some View {
         ZStack {
             if let image {
-                Image(uiImage: image)
+                Image(platformImage: image)
                     .resizable()
                     .scaledToFill()
             } else if failed {
@@ -119,13 +149,13 @@ struct AttachmentImage: View {
             }
         }
         .frame(width: 120, height: 160)
-        .background(Color(uiColor: .tertiarySystemFill))
+        .background(Color.skTertiaryFill)
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         .task(id: id) {
             guard image == nil, let engine = ShipKit.engine else { return }
             do {
                 let data = try await engine.attachmentData(id: id)
-                image = UIImage(data: data)
+                image = PlatformImage(data: data)
                 failed = image == nil
             } catch {
                 failed = true
@@ -177,11 +207,16 @@ func errorMessage(_ error: Error) -> String {
 extension View {
     /// Closes the keyboard when the user taps outside a text field or drags the content.
     func shipKitDismissesKeyboard() -> some View {
-        scrollDismissesKeyboard(.interactively)
+        #if os(iOS)
+        return scrollDismissesKeyboard(.interactively)
             .background(KeyboardDismissInstaller().frame(width: 0, height: 0))
+        #else
+        return self
+        #endif
     }
 }
 
+#if os(iOS)
 private struct KeyboardDismissInstaller: UIViewRepresentable {
     func makeUIView(context: Context) -> InstallerView { InstallerView() }
     func updateUIView(_ uiView: InstallerView, context: Context) {}
@@ -221,3 +256,4 @@ private struct KeyboardDismissInstaller: UIViewRepresentable {
         }
     }
 }
+#endif

@@ -184,3 +184,10 @@
 "push.updates.footer" = "Notifications quand le statut d’un retour ou d’une suggestion que vous avez envoyé ou soutenu change. Désactivez cette option pour ne plus les recevoir.";
 "statusUpdate.unavailable" = "Cet élément n’est plus disponible.";
 "feedback.email.label" = "E-mail";
+
+// In-app asks
+"ask.invite.title" = "Vous avez une minute ?";
+"ask.invite.body" = "Nous avons une petite question pour vous.";
+"ask.invite.body.feedback" = "Nous aimerions savoir ce que vous en pensez.";
+"ask.invite.accept" = "Participer";
+"ask.invite.decline" = "Pas maintenant";

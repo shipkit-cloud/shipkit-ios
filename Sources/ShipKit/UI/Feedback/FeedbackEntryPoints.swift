@@ -1,3 +1,4 @@
+#if !os(tvOS)
 import SwiftUI
 
 extension ShipKit {
@@ -102,16 +103,20 @@ extension ShipKit.FeedbackButton where Label == SwiftUI.Label<Text, Image> {
 struct FeedbackSheet: View {
     let category: FeedbackCategory
     var prompt: String?
+    var ask: ShipKitAsk?
+    var onSubmitted: (@MainActor () -> Void)?
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
-            ShipKit.FeedbackView(category: category, prompt: prompt)
+            ShipKit.FeedbackView(category: category, prompt: prompt, ask: ask, onSubmitted: onSubmitted)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
                         Button(L("common.cancel")) { dismiss() }
                     }
                 }
         }
+        .skSheetSize()
     }
 }
+#endif

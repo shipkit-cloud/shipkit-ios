@@ -5,7 +5,9 @@ let package = Package(
     name: "ShipKit",
     defaultLocalization: "en",
     platforms: [
-        .iOS(.v16)
+        .iOS(.v16),
+        .macOS(.v13),
+        .tvOS(.v16)
     ],
     products: [
         .library(name: "ShipKit", targets: ["ShipKit"])

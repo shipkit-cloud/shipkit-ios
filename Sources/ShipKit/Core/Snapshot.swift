@@ -10,6 +10,8 @@ public struct ShipKitSnapshot: Codable, Sendable, Equatable {
     public var inbox: Inbox?
     /// The feedback form designed in the dashboard, or `nil` for the standard form.
     public var feedbackForm: FeedbackForm?
+    /// An in-app ask waiting for this install. Your app decides when to show it; see `ShipKit.presentPendingAsk()`.
+    public var ask: ShipKitAsk?
 
     public struct Inbox: Codable, Sendable, Equatable {
         public var unread: Int
@@ -26,7 +28,8 @@ public struct ShipKitSnapshot: Codable, Sendable, Equatable {
         flags: [String: ShipKitValue] = [:],
         version: VersionInfo? = nil,
         unreadCount: Int = 0,
-        feedbackForm: FeedbackForm? = nil
+        feedbackForm: FeedbackForm? = nil,
+        ask: ShipKitAsk? = nil
     ) {
         self.release = release
         self.ttl = ttl
@@ -35,6 +38,7 @@ public struct ShipKitSnapshot: Codable, Sendable, Equatable {
         self.version = version
         self.inbox = Inbox(unread: unreadCount)
         self.feedbackForm = feedbackForm
+        self.ask = ask
     }
 
     /// Decodes a snapshot from the JSON body served by the backend.
@@ -43,7 +47,7 @@ public struct ShipKitSnapshot: Codable, Sendable, Equatable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case release, ttl, settings, flags, version, inbox, feedbackForm
+        case release, ttl, settings, flags, version, inbox, feedbackForm, ask
     }
 
     public init(from decoder: Decoder) throws {
@@ -55,6 +59,7 @@ public struct ShipKitSnapshot: Codable, Sendable, Equatable {
         version = try container.decodeIfPresent(VersionInfo.self, forKey: .version)
         inbox = container.decodeLossy(Inbox.self, forKey: .inbox)
         feedbackForm = container.decodeLossy(FeedbackForm.self, forKey: .feedbackForm)
+        ask = container.decodeLossy(ShipKitAsk.self, forKey: .ask)
     }
 }
 

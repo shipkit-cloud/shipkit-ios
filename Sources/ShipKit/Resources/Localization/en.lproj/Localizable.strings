@@ -184,3 +184,10 @@
 "push.updates.footer" = "Notifications when feedback or feature requests you sent or voted for change status. Turn this off to stop receiving them.";
 "statusUpdate.unavailable" = "This item is no longer available.";
 "feedback.email.label" = "Email";
+
+// In-app asks
+"ask.invite.title" = "Got a minute?";
+"ask.invite.body" = "We have a quick question for you.";
+"ask.invite.body.feedback" = "We’d love to hear what you think.";
+"ask.invite.accept" = "Take part";
+"ask.invite.decline" = "Not now";

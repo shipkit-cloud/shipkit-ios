@@ -1,10 +1,15 @@
+#if !os(tvOS)
 import ObjectiveC
+#if canImport(UIKit)
 import UIKit
+#else
+import AppKit
+#endif
 
 @MainActor
 enum ScreenCapture {
-    /// Screen captured just before a feedback sheet is presented (button tap or shake).
-    private static var pending: UIImage?
+    /// Screen captured just before a feedback sheet is presented (button tap, shake or menu command).
+    private static var pending: PlatformImage?
 
     static func captureForFeedback() {
         pending = captureKeyWindow()
@@ -12,12 +17,13 @@ enum ScreenCapture {
 
     /// The screen the user came from. Called from the form's first `onAppear`: at that point the
     /// push or sheet transition hasn't been committed yet, so the window still shows the previous screen.
-    static func screenBeforeFeedback() -> UIImage? {
+    static func screenBeforeFeedback() -> PlatformImage? {
         defer { pending = nil }
         return pending ?? captureKeyWindow()
     }
 
-    static func captureKeyWindow() -> UIImage? {
+    #if canImport(UIKit)
+    static func captureKeyWindow() -> PlatformImage? {
         let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
         let windows = scenes.flatMap(\.windows)
         guard let window = windows.first(where: \.isKeyWindow) ?? windows.first else { return nil }
@@ -27,12 +33,34 @@ enum ScreenCapture {
             target.drawHierarchy(in: target.bounds, afterScreenUpdates: false)
         }
     }
+    #else
+    /// Draws the content of the app's own front window. Needs no screen recording permission.
+    static func captureKeyWindow() -> PlatformImage? {
+        let application = NSApplication.shared
+        // A sheet is its own window; the screenshot should show the window underneath it.
+        let candidates = [application.mainWindow, application.keyWindow?.sheetParent, application.keyWindow]
+        guard let window = candidates.compactMap({ $0 }).first ?? application.windows.first(where: \.isVisible),
+              let view = window.contentView,
+              view.bounds.width > 0, view.bounds.height > 0,
+              let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return nil }
+        view.cacheDisplay(in: view.bounds, to: bitmap)
+        let image = NSImage(size: view.bounds.size)
+        image.addRepresentation(bitmap)
+        return image
+    }
+    #endif
 }
 
+/// Posted to ask the mounted `.shipKitGate()` to open the feedback form (shake, menu command).
+enum FeedbackTrigger {
+    static let notification = Notification.Name("ShipKitDeviceShaken")
+}
+
+#if os(iOS)
 /// Posts `notification` when the device is shaken. Installed only when shake-to-report is enabled.
 @MainActor
 enum ShakeDetector {
-    static let notification = Notification.Name("ShipKitDeviceShaken")
+    static let notification = FeedbackTrigger.notification
     private static var installed = false
 
     static func install() {
@@ -60,3 +88,5 @@ enum ShakeDetector {
         }
     }
 }
+#endif
+#endif

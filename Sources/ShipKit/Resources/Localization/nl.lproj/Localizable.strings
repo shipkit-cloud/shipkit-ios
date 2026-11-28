@@ -184,3 +184,10 @@
 "push.updates.footer" = "Meldingen wanneer de status verandert van feedback of functieverzoeken die je stuurde of waarop je stemde. Zet dit uit om ze niet meer te ontvangen.";
 "statusUpdate.unavailable" = "Dit item is niet meer beschikbaar.";
 "feedback.email.label" = "E-mail";
+
+// In-app asks
+"ask.invite.title" = "Heb je even?";
+"ask.invite.body" = "We hebben een korte vraag voor je.";
+"ask.invite.body.feedback" = "We horen graag wat je ervan vindt.";
+"ask.invite.accept" = "Doe mee";
+"ask.invite.decline" = "Niet nu";

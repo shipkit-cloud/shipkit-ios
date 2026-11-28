@@ -184,3 +184,10 @@
 "push.updates.footer" = "Notifiche quando cambia lo stato dei feedback o delle richieste che hai inviato o votato. Disattiva per non riceverle più.";
 "statusUpdate.unavailable" = "Questo elemento non è più disponibile.";
 "feedback.email.label" = "E-mail";
+
+// In-app asks
+"ask.invite.title" = "Hai un minuto?";
+"ask.invite.body" = "Abbiamo una domanda veloce per te.";
+"ask.invite.body.feedback" = "Ci piacerebbe sapere cosa ne pensi.";
+"ask.invite.accept" = "Partecipa";
+"ask.invite.decline" = "Non ora";

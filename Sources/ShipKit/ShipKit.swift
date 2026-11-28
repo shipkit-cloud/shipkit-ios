@@ -1,12 +1,11 @@
 import Foundation
 import os
-import UIKit
 
 private let engineBox = OSAllocatedUnfairLock<Engine?>(initialState: nil)
 
 /// Entry point for remote settings, feature flags, version enforcement and in-app feedback.
 public enum ShipKit {
-    public static let sdkVersion = "1.3.0"
+    public static let sdkVersion = "1.5.0"
 
     static var engine: Engine? { engineBox.withLock { $0 } }
 
@@ -50,7 +49,9 @@ public enum ShipKit {
         install(engine)
         engine.recordLaunch()
         LifecycleObserver.shared.attach(engine)
+        #if !os(tvOS)
         PushCoordinator.shared.attach(engine)
+        #endif
         engine.noteRefreshScheduled()
         Task { await engine.refresh() }
     }
@@ -78,7 +79,9 @@ public enum ShipKit {
         )
         install(engine)
         LifecycleObserver.shared.detach()
+        #if !os(tvOS)
         PushCoordinator.shared.detach()
+        #endif
     }
 
     @MainActor
@@ -179,7 +182,7 @@ final class LifecycleObserver {
     func attach(_ engine: Engine) {
         detach()
         token = NotificationCenter.default.addObserver(
-            forName: UIApplication.willEnterForegroundNotification,
+            forName: PlatformApp.foregroundNotification,
             object: nil,
             queue: .main
         ) { _ in

@@ -186,6 +186,9 @@ struct FeedbackSubmission: Codable, Sendable {
     var answers: [FeedbackAnswer]? = nil
     /// Revision of the custom form the answers belong to.
     var formRev: String? = nil
+    /// The in-app ask this feedback answers. Queued items from older SDKs decode with `nil`.
+    var askId: String? = nil
+    var askTest: Bool? = nil
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -197,6 +200,8 @@ struct FeedbackSubmission: Codable, Sendable {
         try container.encode(context, forKey: .context)
         try container.encodeIfPresent(answers, forKey: .answers)
         try container.encodeIfPresent(formRev, forKey: .formRev)
+        try container.encodeIfPresent(askId, forKey: .askId)
+        if askTest == true { try container.encode(true, forKey: .askTest) }
     }
 }
 
@@ -231,7 +236,7 @@ struct EventsBody: Encodable, Sendable {
         var appVersion: String
         var build: String
         var osVersion: String
-        var platform: String = "ios"
+        var platform: String = ShipKitPlatform.current.rawValue
     }
     struct Exposure: Encodable, Sendable {
         var flag: String

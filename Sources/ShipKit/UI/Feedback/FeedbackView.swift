@@ -1,10 +1,13 @@
+#if !os(tvOS)
 import PhotosUI
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#endif
 
 private struct DraftAttachment: Identifiable, Equatable {
     let id = UUID()
-    var image: UIImage
+    var image: PlatformImage
 }
 
 extension ShipKit {
@@ -27,18 +30,23 @@ extension ShipKit {
         @State private var redacting: DraftAttachment?
         @State private var phase: Phase = .editing
         @State private var errorText: String?
-        @State private var previousScreen: UIImage?
+        @State private var previousScreen: PlatformImage?
         @State private var appeared = false
         @State private var triedToSend = false
         @FocusState private var focused: String?
         private let prompt: String?
+        /// The in-app ask this feedback answers, and what to tell it once the feedback is sent or queued.
+        private let ask: ShipKitAsk?
+        private let onSubmitted: (@MainActor () -> Void)?
 
         public init(category: FeedbackCategory = .bug) {
             self.init(category: category, prompt: nil)
         }
 
-        /// `prompt` is the developer's question from a feedback push, shown above the form.
-        init(category: FeedbackCategory, prompt: String?) {
+        /// `prompt` is the developer's question from a feedback push or in-app ask, shown above the form.
+        init(category: FeedbackCategory, prompt: String?, ask: ShipKitAsk? = nil, onSubmitted: (@MainActor () -> Void)? = nil) {
+            self.ask = ask
+            self.onSubmitted = onSubmitted
             let form = FeedbackForm.resolve(ShipKit.engine?.snapshot?.feedbackForm, config: ShipKit.config.feedback)
             _form = State(initialValue: form)
             let hasCategory = form.visibleFields.contains { $0.kind == .category }
@@ -79,7 +87,7 @@ extension ShipKit {
             }
             .shipKitDismissesKeyboard()
             .navigationTitle(L("feedback.title"))
-            .navigationBarTitleDisplayMode(.inline)
+            .skInlineTitle()
             .shipKitTint()
             .onAppear {
                 guard !appeared else { return }
@@ -136,6 +144,7 @@ extension ShipKit {
                         attachments[index].image = redacted
                     }
                 }
+                .skSheetSize(width: 640, height: 560)
             }
             .onChange(of: photoItems) { items in
                 guard !items.isEmpty else { return }
@@ -258,9 +267,7 @@ extension ShipKit {
             case .email:
                 Section {
                     TextField(field.placeholder ?? L("feedback.email.placeholder"), text: textBinding(field.id, max: 256))
-                        .keyboardType(.emailAddress)
-                        .textContentType(.emailAddress)
-                        .textInputAutocapitalization(.never)
+                        .skEmailField()
                         .autocorrectionDisabled()
                         .focused($focused, equals: field.id)
                 } header: {
@@ -343,7 +350,7 @@ extension ShipKit {
         }
 
         private func thumbnail(_ attachment: DraftAttachment) -> some View {
-            Image(uiImage: attachment.image)
+            Image(platformImage: attachment.image)
                 .resizable()
                 .scaledToFill()
                 .frame(width: 84, height: 120)
@@ -377,7 +384,7 @@ extension ShipKit {
             guard let context = ShipKit.engine?.makeContext() else { return [] }
             var rows: [(String, String)] = [
                 (L("context.appVersion"), "\(context.appVersion) (\(context.build))"),
-                (L("context.os"), "iOS \(context.osVersion ?? "")"),
+                (L("context.os"), "\(ShipKitPlatform.current.displayName) \(context.osVersion ?? "")"),
                 (L("context.device"), context.device ?? ""),
                 (L("context.locale"), context.locale ?? ""),
                 (L("context.installID"), context.stableId)
@@ -407,7 +414,7 @@ extension ShipKit {
 
         private func loadPhotos(_ items: [PhotosPickerItem]) async {
             for item in items where attachments.count < maxAttachments {
-                if let data = try? await item.loadTransferable(type: Data.self), let image = UIImage(data: data) {
+                if let data = try? await item.loadTransferable(type: Data.self), let image = PlatformImage(data: data) {
                     attachments.append(DraftAttachment(image: image))
                 }
             }
@@ -432,16 +439,18 @@ extension ShipKit {
             // The standard form sends exactly what older SDKs sent, so the message stays required there.
             let answers = form.isCustom ? form.answers(values) : nil
             let formRev = form.rev
+            let ask = self.ask
             Task {
                 do {
                     let result = try await engine.submitFeedback(
                         category: category, rating: rating, message: text, email: email, images: payloads,
-                        answers: answers, formRev: formRev
+                        answers: answers, formRev: formRev, ask: ask
                     )
                     switch result {
                     case .sent: phase = .sent
                     case .queued: phase = .queued
                     }
+                    onSubmitted?()
                     _ = await engine.refreshUnread()
                 } catch {
                     phase = .editing
@@ -478,7 +487,7 @@ enum ImageEncoding {
     static let maxDimension: CGFloat = 2048
 
     /// Downscales and JPEG-encodes an image to fit the 5 MB upload limit.
-    static func payload(for image: UIImage) -> ImagePayload? {
+    static func payload(for image: PlatformImage) -> ImagePayload? {
         let scaled = downscale(image)
         for quality in [0.8, 0.6, 0.4, 0.25] as [CGFloat] {
             if let data = scaled.jpegData(compressionQuality: quality), data.count <= maxBytes {
@@ -488,17 +497,27 @@ enum ImageEncoding {
         return nil
     }
 
-    private static func downscale(_ image: UIImage) -> UIImage {
+    private static func downscale(_ image: PlatformImage) -> PlatformImage {
+        #if os(macOS)
+        let pixelWidth = image.pixelSize.width
+        let pixelHeight = image.pixelSize.height
+        #else
         let pixelWidth = image.size.width * image.scale
         let pixelHeight = image.size.height * image.scale
+        #endif
         let longest = max(pixelWidth, pixelHeight)
         guard longest > maxDimension else { return image }
         let factor = maxDimension / longest
         let size = CGSize(width: (pixelWidth * factor).rounded(), height: (pixelHeight * factor).rounded())
+        #if os(macOS)
+        return image.redrawn(pixelSize: size)
+        #else
         let format = UIGraphicsImageRendererFormat()
         format.scale = 1
         return UIGraphicsImageRenderer(size: size, format: format).image { _ in
             image.draw(in: CGRect(origin: .zero, size: size))
         }
+        #endif
     }
 }
+#endif
